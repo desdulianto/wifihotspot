@@ -1,8 +1,15 @@
 from flask import render_template, url_for, redirect
-from app import app
+from flask import Blueprint
 
-@app.route('/setup', endpoint='setup')
+from app import app
+import forms
+
+
+blueprint = Blueprint('setup', __name__)
+
+@blueprint.route('/', methods=['GET', 'POST'], endpoint='index')
 def setup():
-    if not app.config['SETUP']:
-        return redirect(url_for('index'))
-    return render_template('setup.html') 
+    form = forms.SetupForm()
+    if form.validate_on_submit():
+        pass
+    return render_template('form_setup.html', form=form, title='Setup')

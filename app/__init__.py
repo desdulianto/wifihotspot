@@ -10,6 +10,9 @@ import sqlalchemy.exc
 
 app = Flask(__name__)
 
+# load templates custom filters and test
+import templates
+
 # check config.py if no config.py then call setup views
 try:
     open('config.py', 'r')
@@ -24,7 +27,8 @@ except IOError:
 
     app.config['SETUP'] = True
 
-    from setup import views
+    from setup.views import blueprint as setup_blueprint
+    app.register_blueprint(setup_blueprint, url_prefix='/setup')
 
 # initialize db
 db = SQLAlchemy(app)
