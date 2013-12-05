@@ -1,4 +1,5 @@
 *.sw?
 *.pyc
 config.py
+access.log
 venv/
