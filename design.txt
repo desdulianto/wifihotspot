@@ -1,0 +1,35 @@
+1. configuration
+    untuk config database
+        jenis - sqlite, mysql, postgresql
+        user
+        password
+        host
+    untuk config redis
+        host
+        user
+        password
+    untuk config mikrotik (hotspot)
+        host
+        user
+        password
+    untuk database radius
+        jenis - mysql, postgresql
+        host
+        user
+        password
+    untuk sms
+        device
+2. users
+    untuk pengguna wifi hotspot management system (whms)
+    add user
+    add role
+    remove user
+3. vouchers
+    list voucher
+    create voucher (batch/single)
+    voucher:
+        voucher number - as user name and password
+        session time   - berapa lama voucher ini berlaku
+4. wifi hotspot
+    menampilkan daftar user online
+    disconnect user
