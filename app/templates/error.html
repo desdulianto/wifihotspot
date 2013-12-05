@@ -1,0 +1,9 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1>{{ message }}</h1> {% if sub is defined %}<small>{{sub}}</small>{%
+    endif %}
+</div>
+<p>Back to <a href="{{url_for('index')}}">Index</a></p>
+{% endblock %}
