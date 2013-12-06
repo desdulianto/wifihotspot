@@ -5,6 +5,8 @@ from flask.ext.principal import Principal, Permission, RoleNeed, \
 from flask.ext.login import LoginManager
 from werkzeug.exceptions import InternalServerError
 
+import redis
+
 import sqlalchemy.exc
 
 
@@ -60,13 +62,16 @@ app.config['SQLALCHEMY_BINDS'] = {'radius': '%s://%s:%s@%s:%s/%s' %
 # sms
 app.config['SMS_HOST'] = config.get('sms', 'host')
 app.config['SMS_PORT'] = config.get('sms', 'port')
-app.config['SMS_DB'] = config.get('sms', 'db')
-app.config['SMS_USER'] = config.get('sms', 'user')
+app.config['SMS_DB'] = config.getint('sms', 'db')
 app.config['SMS_PASSWORD'] = config.get('sms', 'password')
+app.redis = redis.StrictRedis(host=app.config['SMS_HOST'],
+    port=app.config['SMS_PORT'], db=app.config['SMS_DB'],
+    password=app.config['SMS_PASSWORD'])
 
 
 # initialize db
 db = SQLAlchemy(app)
+db.create_all(bind=None)
 
 # load login extensions
 login_manager = LoginManager(app)
