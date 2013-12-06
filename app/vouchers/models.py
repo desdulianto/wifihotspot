@@ -12,12 +12,14 @@ class RadCheck(db.Model):
     name = db.Column(db.String(64), default='')
     phone = db.Column(db.String(20), default='')
     time = db.Column(db.DateTime, default=datetime.now)
+    group = db.relationship('RadUserGroup', backref='user', cascade='delete',
+        primaryjoin='RadCheck.username==RadUserGroup.username')
 
 
 class RadUserGroup(db.Model):
     __tablename__ = 'radusergroup'
     __bind_key__  = 'radius'
-    username = db.Column(db.String(64), nullable=False, default='', index=True,
-            primary_key=True)
+    username = db.Column(db.String(64), db.ForeignKey('radcheck.username'), nullable=False, 
+            default='', index=True, primary_key=True, )
     groupname = db.Column(db.String(64), nullable=False, default='', index=True)
     priority = db.Column(db.Integer, nullable=False, default=0)
