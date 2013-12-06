@@ -55,7 +55,7 @@ app.config['RADIUS_PASSWORD'] = config.get('radius', 'password')
 app.config['SQLALCHEMY_BINDS'] = {'radius': '%s://%s:%s@%s:%s/%s' %
         (app.config['RADIUS_DBTYPE'], app.config['RADIUS_USER'],
         app.config['RADIUS_PASSWORD'], app.config['RADIUS_HOST'],
-        app.config['RADIUS_HOST'], app.config['RADIUS_DBNAME'])}
+        app.config['RADIUS_PORT'], app.config['RADIUS_DBNAME'])}
 
 # sms
 app.config['SMS_HOST'] = config.get('sms', 'host')
