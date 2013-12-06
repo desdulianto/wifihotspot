@@ -36,6 +36,8 @@ config.read('config.ini')
 
 # flask
 app.config['SECRET_KEY'] = config.get('flask', 'SECRET_KEY')
+app.config['SQLALCHEMY_DATABASE_URI'] = config.get('flask',
+    'SQLALCHEMY_DATABASE_URI')
 
 # mikrotik
 app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')
@@ -50,6 +52,10 @@ app.config['RADIUS_PORT'] = config.get('radius', 'port')
 app.config['RADIUS_DBNAME'] = config.get('radius', 'dbname')
 app.config['RADIUS_USER'] = config.get('radius', 'user')
 app.config['RADIUS_PASSWORD'] = config.get('radius', 'password')
+app.config['SQLALCHEMY_BINDS'] = {'radius': '%s://%s:%s@%s:%s/%s' %
+        (app.config['RADIUS_DBTYPE'], app.config['RADIUS_USER'],
+        app.config['RADIUS_PASSWORD'], app.config['RADIUS_HOST'],
+        app.config['RADIUS_HOST'], app.config['RADIUS_DBNAME'])}
 
 # sms
 app.config['SMS_HOST'] = config.get('sms', 'host')
