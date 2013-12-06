@@ -39,18 +39,22 @@ app.config['SECRET_KEY'] = config.get('flask', 'SECRET_KEY')
 
 # mikrotik
 app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')
+app.config['MIKROTIK_PORT'] = config.get('mikrotik', 'port')
 app.config['MIKROTIK_USER'] = config.get('mikrotik', 'user')
 app.config['MIKROTIK_PASSWORD'] = config.get('mikrotik', 'password')
 
 # radius
 app.config['RADIUS_DBTYPE'] = config.get('radius', 'dbtype')
 app.config['RADIUS_HOST'] = config.get('radius', 'host')
+app.config['RADIUS_PORT'] = config.get('radius', 'port')
 app.config['RADIUS_DBNAME'] = config.get('radius', 'dbname')
 app.config['RADIUS_USER'] = config.get('radius', 'user')
 app.config['RADIUS_PASSWORD'] = config.get('radius', 'password')
 
 # sms
 app.config['SMS_HOST'] = config.get('sms', 'host')
+app.config['SMS_PORT'] = config.get('sms', 'port')
+app.config['SMS_DB'] = config.get('sms', 'db')
 app.config['SMS_USER'] = config.get('sms', 'user')
 app.config['SMS_PASSWORD'] = config.get('sms', 'password')
 
