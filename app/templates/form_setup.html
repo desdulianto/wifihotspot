@@ -1,0 +1,50 @@
+{% extends "form.html" %}
+
+{% macro input(control) %}
+<div class="form-group col-sm-12">
+<dt>{{control.label(class="control-label")}}</dt>
+<dd>{{control(class="form-control")}}
+{% if control.errors -%}
+<ul class="list-inline">
+    {% for error in control.errors -%}
+    <li>{{error}}</li>
+    {%- endfor %}
+</ul>
+{%- endif %}
+</dd>
+</div>
+{% endmacro %}
+
+{% block form_body %}
+<form action="" method="post" role="form">
+    {{form.hidden_tag()}}
+<ul class="list-group">
+    <li class="list-group-item">{{form.mikrotik.label()}}
+        <dl class="dl-horizontal">
+            {{ input(form.mikrotik.host) }}
+            {{ input(form.mikrotik.user) }}
+            {{ input(form.mikrotik.password) }}
+        </dl>
+    </li>
+    <li class="list-group-item">{{form.radius.label()}}
+        <dl class="dl-horizontal">
+            {{ input(form.radius.dbtype) }}
+            {{ input(form.radius.host) }}
+            {{ input(form.radius.dbname) }}
+            {{ input(form.radius.user) }}
+            {{ input(form.radius.password) }}
+        </dl>
+    </li>
+    <li class="list-group-item">{{form.sms_gateway.label()}}
+        <dl class="dl-horizontal">
+            {{ input(form.sms_gateway.redis_host) }}
+            {{ input(form.sms_gateway.redis_user) }}
+            {{ input(form.sms_gateway.redis_password) }}
+        </dl>
+    </li>
+</ul>
+<div class="panel-body">
+<button type="submit" class="btn btn-primary pull-right">Save</button>
+</div>
+</form>
+{% endblock %}

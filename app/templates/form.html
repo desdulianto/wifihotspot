@@ -1,0 +1,9 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="panel panel-default">
+    {% if title is defined %}<div
+        class="panel-heading"><h1 class="panel-title">{{title}}</h1></div>{%endif%}
+    {% block form_body %}{% endblock %}
+</div>
+{% endblock %}
