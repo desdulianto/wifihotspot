@@ -15,7 +15,7 @@ import templates
 
 # check config.py if no config.py then call setup views
 try:
-    open('config.py', 'r')
+    open('config.ini', 'r')
     app.config['SETUP'] = False
 except IOError:
     # generate temporary secret key
@@ -27,8 +27,33 @@ except IOError:
 
     app.config['SETUP'] = True
 
-    from setup.views import blueprint as setup_blueprint
-    app.register_blueprint(setup_blueprint, url_prefix='/setup')
+
+# read config
+import ConfigParser
+
+config = ConfigParser.ConfigParser()
+config.read('config.ini')
+
+# flask
+app.config['SECRET_KEY'] = config.get('flask', 'SECRET_KEY')
+
+# mikrotik
+app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')
+app.config['MIKROTIK_USER'] = config.get('mikrotik', 'user')
+app.config['MIKROTIK_PASSWORD'] = config.get('mikrotik', 'password')
+
+# radius
+app.config['RADIUS_DBTYPE'] = config.get('radius', 'dbtype')
+app.config['RADIUS_HOST'] = config.get('radius', 'host')
+app.config['RADIUS_DBNAME'] = config.get('radius', 'dbname')
+app.config['RADIUS_USER'] = config.get('radius', 'user')
+app.config['RADIUS_PASSWORD'] = config.get('radius', 'password')
+
+# sms
+app.config['SMS_HOST'] = config.get('sms', 'host')
+app.config['SMS_USER'] = config.get('sms', 'user')
+app.config['SMS_PASSWORD'] = config.get('sms', 'password')
+
 
 # initialize db
 db = SQLAlchemy(app)
@@ -99,3 +124,7 @@ if not app.debug:
 
 # views
 import views
+from setup.views import blueprint as setup_blueprint
+
+app.register_blueprint(setup_blueprint, url_prefix='/setup')
+
