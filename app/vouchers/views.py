@@ -16,8 +16,8 @@ def index():
     return render_template('index.html')
 
 
-@blueprint.route('/<phone>', methods=['POST'], endpoint='add_voucher_by_phone')
-def add_voucher_by_phone(phone):
+@blueprint.route('/<name>/<phone>', methods=['POST'], endpoint='add_voucher_by_phone')
+def add_voucher_by_phone(name, phone):
     symbols = app.config.get('VOUCHER_SYMBOLS', string.ascii_letters +
             string.digits)
     length = app.config.get('VOUCHER_LENGTH', 8)
