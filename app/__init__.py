@@ -64,7 +64,7 @@ app.config['SMS_HOST'] = config.get('sms', 'host')
 app.config['SMS_PORT'] = config.get('sms', 'port')
 app.config['SMS_DB'] = config.getint('sms', 'db')
 app.config['SMS_PASSWORD'] = config.get('sms', 'password')
-app.redis = redis.StrictRedis(host=app.config['SMS_HOST'],
+redis = redis.StrictRedis(host=app.config['SMS_HOST'],
     port=app.config['SMS_PORT'], db=app.config['SMS_DB'],
     password=app.config['SMS_PASSWORD'])
 
