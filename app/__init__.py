@@ -141,6 +141,8 @@ if not app.debug:
 # views
 import views
 from setup.views import blueprint as setup_blueprint
+from vouchers.views import blueprint as vouchers_blueprint
 
 app.register_blueprint(setup_blueprint, url_prefix='/setup')
+app.register_blueprint(vouchers_blueprint, url_prefix='/vouchers')
 
