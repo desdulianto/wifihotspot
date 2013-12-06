@@ -1,4 +1,5 @@
 from app import db
+from datetime import datetime
 
 class RadCheck(db.Model):
     __tablename__ = 'radcheck'
@@ -8,3 +9,6 @@ class RadCheck(db.Model):
     attribute = db.Column(db.String(64), nullable=False, default='', index=True)
     op = db.Column(db.String(2), nullable=False, default='==')
     value = db.Column(db.String(253), nullable=False, default='')
+    name = db.Column(db.String(64), default='')
+    phone = db.Column(db.String(20), default='')
+    time = db.Column(db.DateTime, default=datetime.now)
