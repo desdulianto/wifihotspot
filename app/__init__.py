@@ -61,7 +61,7 @@ app.config['SQLALCHEMY_BINDS'] = {'radius': '%s://%s:%s@%s:%s/%s' %
 
 # sms
 app.config['SMS_HOST'] = config.get('sms', 'host')
-app.config['SMS_PORT'] = config.get('sms', 'port')
+app.config['SMS_PORT'] = config.getint('sms', 'port')
 app.config['SMS_DB'] = config.getint('sms', 'db')
 app.config['SMS_PASSWORD'] = config.get('sms', 'password')
 redis = redis.StrictRedis(host=app.config['SMS_HOST'],
