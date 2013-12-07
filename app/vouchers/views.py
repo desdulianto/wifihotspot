@@ -121,7 +121,7 @@ def voucher_new():
         addToRadius(voucher, form.name.data, form.phone.data, 'hotspot') 
         flash(Markup(
         '<h1>Voucher untuk <strong>{name} ({phone}): {voucher}</strong></h1>'.
-                format(name=form.name.data, phone=form.phone.data,
+                format(name=form.name.data.title(), phone=form.phone.data,
                     voucher=voucher)), 'success')
         return redirect(url_for('.voucher_list'))
     return render_template('form_complex.html', form=form,
