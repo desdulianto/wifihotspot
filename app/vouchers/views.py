@@ -13,6 +13,7 @@ from flask import Blueprint
 from flask.ext.paginate import Pagination
 
 from jinja2 import Markup
+from sqlalchemy.sql import func
 
 import random
 import string
@@ -39,6 +40,8 @@ def generateVoucher():
 
 
 def addContact(name, phone):
+    name = name.strip().title()
+    phone = phone.strip()
     entry = models.Contact.query.get((name, phone))
     if entry is None:
         entry = models.Contact(name=name, phone=phone)
