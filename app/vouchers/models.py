@@ -1,3 +1,12 @@
+"""
+    wifihotspot.app.vouchers.models
+    -------------------------------
+
+    Vouchers models
+
+    :copyright: (c) 2013 by Des Dulianto
+"""
+
 from app import db
 from datetime import datetime
 
