@@ -7,8 +7,10 @@
     :copyright: (c) 2013 by Des Dulianto
 """
 
-from flask import render_template, jsonify, flash, redirect, url_for
+from flask import render_template, jsonify, flash, redirect, url_for, request
 from flask import Blueprint
+
+from flask.ext.paginate import Pagination
 
 from jinja2 import Markup
 
@@ -83,9 +85,19 @@ def voucher_service_new(name, phone):
 
 @blueprint.route('/list', methods=['GET'], endpoint='voucher_list')
 def voucher_list():
+    per_page=20
+    try:
+        page = int(request.args.get('page', 1))
+    except ValueError:
+        page = 1
+
     vouchers = (models.RadCheck.query.order_by(models.RadCheck.name).
             order_by(models.RadCheck.phone))
-    return render_template('list.html', items=vouchers.all(),
+
+    pagination = Pagination(page=page, total=vouchers.count(), search=False,
+            record_name='vouchers', per_page=per_page, bs_version=3)
+    return render_template('list.html',
+            items=vouchers.limit(per_page).offset((page-1)*per_page).all(),
             columns=[dict(title='Nama', field=lambda x: x.contact.name),
                      dict(title='Telepon', field=lambda x: x.contact.phone),
                      dict(title='No. Voucher', field='username'),
@@ -93,7 +105,9 @@ def voucher_list():
             title='Daftar Voucher',
             void_url='.voucher_delete', 
             create_url='.voucher_new',
-            confirm_void='Yakin hapus (user yang sedang online akan di-disconnect)?')
+            confirm_void=\
+            'Yakin hapus (user yang sedang online akan di-disconnect)?',
+            pagination=pagination)
 
 
 @blueprint.route('/new', methods=['GET', 'POST'], endpoint='voucher_new')
