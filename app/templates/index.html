@@ -45,7 +45,20 @@
         {%-  endif %}
         <div class="row">
             <div class="col-md-12">
-                {% block content %}{% endblock %}
+                {% block content %}
+                    {% for menu in g.menus %}
+                    <div class="col-md-3">
+                        <a href="{{menu.url}}">
+                        <div class="thumbnail">
+                            <div class="caption">
+                                <h3>{{menu.title}}</h3>
+                            </div>
+                        </div>
+                        </a>
+                    </div>
+                    {% endfor %}
+                </ul>
+                {% endblock %}
             </div>
         </div>
     </div>
