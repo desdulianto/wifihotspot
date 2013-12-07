@@ -4,6 +4,8 @@
 <div class="panel panel-default">
     {% if title is defined %}<div
         class="panel-heading"><h1 class="panel-title">{{title}}</h1></div>{%endif%}
+    <div class="panel-body">
     {% block form_body %}{% endblock %}
+    </div>
 </div>
 {% endblock %}

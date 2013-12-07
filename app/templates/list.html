@@ -1,0 +1,89 @@
+{% extends "index.html" %}
+
+{% block content %}
+<div class="panel panel-default">
+    {% if title is defined %}<div class="panel-heading">{{title}}</div>{%endif%}
+    <div class="panel-body">
+    {% if search is defined %}
+    <form action="" method="get" role="form" class="form-inline pull-left">
+        <div class="input-group input-group-sm">
+            <label class="sr-only" for="q">Search</label>
+            <input type="text" class="form-control" id="q" name="q" placeholder="Search">
+            <span class="input-group-btn">
+                <button type="submit" class="btn btn-default"><span
+                        class="glyphicon glyphicon-search"></span></button>
+            </span>
+        </div>
+    </form>
+    {% endif %}
+    {% if create_url is defined %}
+    <form action="{{url_for(create_url)}}" method="get" role="form" class="pull-right">
+        <button type="submit" class="btn btn-primary">
+            Create New
+        </button>
+    </form>
+    {% endif %}
+    </div>
+    <table class="table table-striped table-hover">
+        <thead>
+        <tr>
+            {% for column in columns -%}
+            <th>{{ column.title }}</th>
+            {%- endfor %}
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for item in items %}
+        <tr>
+            {% for column in columns -%}
+            <td>{% if column.field is callable -%} 
+                    {% set value=column.field(item) %}
+                    {% if value is iterable and value is not string -%}
+                        {{ value|join(", ") }}
+                    {%- else -%}
+                        {{ value }}
+                    {%- endif %}
+                {%- else -%} 
+                    {% set value=item|attr(column.field) %}
+                    {% if value is iterable and value is not string -%}
+                        {{ value|join(", ") }}
+                    {%- else -%}
+                        {{ value }}
+                    {%- endif %}
+                {%- endif %}
+            </td>
+            {%- endfor %}
+            <td><div class="btn-group btn-group-xs">
+                    {% if edit_url is defined and edit_url is not none %}<a href="{{url_for(edit_url,
+                    id=item.id)}}" class="btn btn-default"><span
+                        class="glyphicon glyphicon-pencil"></span></a>{% endif %}
+                {% if void_url is defined and void_url is not none %}<a
+                    href="{{url_for(void_url, id=item.id)}}" class="btn
+                    btn-default item-void"><span class="glyphicon
+                        glyphicon-trash"></span></a>{% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+    {% if pagination is defined and pagination.total_pages > 1 %}
+    <div class="panel-footer">
+        {{pagination.links|safe}}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block javascript %}
+{{super()}}
+<script type="text/javascript">
+    $('.item-void').click(function(event) {            
+            var sure = confirm({% if confirm_void
+                %}'{{confirm_void}}'{%else%}'Are you sure?'{%endif%});
+            if (! sure)
+                event.preventDefault();
+            });
+</script>
+{% endblock %}

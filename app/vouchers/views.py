@@ -1,12 +1,24 @@
-from flask import render_template, jsonify
+"""
+    wifihotspot.app.vouchers.views
+    ------------------------------
+
+    Vouchers views
+
+    :copyright: (c) 2013 by Des Dulianto
+"""
+
+from flask import render_template, jsonify, flash, redirect, url_for
 from flask import Blueprint
+
+from jinja2 import Markup
 
 import random
 import string
+import json
 
 from app import app, db, redis
 import models
-import json
+import forms
 
 
 blueprint = Blueprint('vouchers', __name__)
@@ -56,13 +68,55 @@ def index():
     return render_template('index.html')
 
 
-@blueprint.route('/<name>/<phone>', methods=['POST'], endpoint='add_voucher_by_phone')
-def add_voucher_by_phone(name, phone):
+@blueprint.route('/<name>/<phone>', methods=['POST'],
+        endpoint='voucher_service_new')
+def voucher_service_new(name, phone):
     voucher = generateVoucher()
 
     # save to radius db
     addToRadius(voucher, name, phone, 'hotspot')
 
     # send to sms queue
-    sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
+    #sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
     return jsonify(status='OK', phone=phone, voucher=voucher)
+
+
+@blueprint.route('/list', methods=['GET'], endpoint='voucher_list')
+def voucher_list():
+    vouchers = (models.RadCheck.query.order_by(models.RadCheck.name).
+            order_by(models.RadCheck.phone))
+    return render_template('list.html', items=vouchers.all(),
+            columns=[dict(title='Nama', field=lambda x: x.contact.name),
+                     dict(title='Telepon', field=lambda x: x.contact.phone),
+                     dict(title='No. Voucher', field='username'),
+                     dict(title='Waktu Generate', field='time')],
+            title='Daftar Voucher',
+            void_url='.voucher_delete', 
+            create_url='.voucher_new',
+            confirm_void='Yakin hapus (user yang sedang online akan di-disconnect)?')
+
+
+@blueprint.route('/new', methods=['GET', 'POST'], endpoint='voucher_new')
+def voucher_new():
+    form = forms.VoucherForm()
+    if form.validate_on_submit():
+        voucher = generateVoucher()
+        addToRadius(voucher, form.name.data, form.phone.data, 'hotspot') 
+        flash(Markup(
+        '<h1>Voucher untuk <strong>{name} ({phone}): {voucher}</strong></h1>'.
+                format(name=form.name.data, phone=form.phone.data,
+                    voucher=voucher)), 'success')
+        return redirect(url_for('.voucher_list'))
+    return render_template('form_complex.html', form=form,
+            fields=['name', 'phone'], title='Voucher Baru')
+
+
+@blueprint.route('/delete/<int:id>', methods=['GET', 'POST'], endpoint='voucher_delete')
+def voucher_delete(id):
+    voucher = models.RadCheck.query.get_or_404(id)
+    db.session.delete(voucher)
+    db.session.commit()
+    flash(Markup(
+        '<h1>Voucher {voucher} telah dihapus!</h1>'.
+        format(voucher=voucher.username)), 'success')
+    return redirect(url_for('.voucher_list'))
