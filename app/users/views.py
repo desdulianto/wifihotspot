@@ -1,8 +1,8 @@
 from flask import Blueprint
-from flask import request, url_for, redirect, render_template
-from flask.ext.login import login_user, logout_user
+from flask import request, url_for, redirect, render_template, g, flash
+from flask.ext.login import login_user, logout_user, login_required
 
-from app import app, login_manager
+from app import app, login_manager, db
 
 import forms
 import models
@@ -39,3 +39,21 @@ def logout():
     logout_user()
 
     return redirect(url_for('login'))
+
+
+@blueprint.route('/account', methods=['GET', 'POST'], endpoint='account')
+@login_required
+def user_account():
+    user = g.user
+    form = forms.ChangePasswordForm()
+    if form.validate_on_submit():
+        user.password_change(form.password.data)
+        db.session.add(user)
+        db.session.commit()
+
+        next_page = getattr(request, 'referrer', url_for('index'))
+
+        flash('Password telah diupdate!', 'success')
+        return redirect(next_page)
+    return render_template('form_complex.html', title='Change Password',
+            fields=['password', 'password_verify'], form=form)

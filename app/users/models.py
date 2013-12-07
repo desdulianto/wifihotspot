@@ -16,6 +16,9 @@ class User(db.Model, UserMixin):
     def password_check(self, password):
         return self.password == User.password_hash(password)
 
+    def password_change(self, password):
+        self.password = User.password_hash(password)
+
     def is_active(self):
         return self.active
 

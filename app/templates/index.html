@@ -16,6 +16,8 @@
             </div>
             <div class="collapse navbar-collapse pull-right">
                 <ul class="nav navbar-nav">
+                    <li><a
+                        href="{{url_for('users.account')}}">{{g.user.name}}</a></li>
                     <li><a href="{{url_for('logout')}}">Logout</a></li>
                 </ul>
             </div>
