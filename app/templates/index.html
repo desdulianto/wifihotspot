@@ -63,6 +63,8 @@
         </div>
     </div>
 </div>
+{% if g.user is defined and g.user.is_authenticated() %}
 <div id="footer">
 </div>
+{% endif %}
 {% endblock %}
