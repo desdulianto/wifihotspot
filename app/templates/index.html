@@ -2,6 +2,8 @@
 
 {% block style %}
     {{super()}}
+    <link rel="stylesheet" type="text/css" href="{{url_for('static', 
+    filename='css/wifi.css')}}">
 {% endblock %}
 
 {% block body %}
@@ -21,6 +23,7 @@
     </div>
     {%- endif %}
     <div class="container">
+        {% if g.user is defined and g.user.is_authenticated() -%}
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         <div class="row">
@@ -37,6 +40,7 @@
         </div>
         {% endif %}
         {% endwith %}
+        {%-  endif %}
         <div class="row">
             <div class="col-md-12">
                 {% block content %}{% endblock %}

@@ -78,6 +78,9 @@ db.create_all(bind=None)
 login_manager = LoginManager(app)
 principal = Principal(app)
 
+login_manager.login_view = 'login'
+login_manager.login_message = 'Silahkan login terlebih dahulu'
+
 # handle exceptions
 @app.errorhandler(PermissionDenied)
 def permission_denied_page(error):
@@ -140,9 +143,11 @@ if not app.debug:
 
 # views
 import views
+from users.views import blueprint as users_blueprint
 from setup.views import blueprint as setup_blueprint
 from vouchers.views import blueprint as vouchers_blueprint
 
+app.register_blueprint(users_blueprint, url_prefix='/users')
 app.register_blueprint(setup_blueprint, url_prefix='/setup')
 app.register_blueprint(vouchers_blueprint, url_prefix='/vouchers')
 
