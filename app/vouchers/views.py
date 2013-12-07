@@ -24,13 +24,25 @@ def generateVoucher():
     return voucher
 
 
+def addContact(name, phone):
+    entry = models.Contact.query.get((name, phone))
+    if entry is None:
+        entry = models.Contact(name=name, phone=phone)
+        db.session.add(entry)
+        db.session.commit()
+    return entry
+
+
 def addToRadius(voucher, name, phone, groupname):
     radcheck = models.RadCheck(username=voucher, attribute='Cleartext-Password',
-            op=':=', value=voucher, name=name, phone=phone)
+            op=':=', value=voucher)
     radgroup = models.RadUserGroup(username=voucher, groupname=groupname,
             priority=1)
+    contact = addContact(name=name, phone=phone)
+    radcheck.contact = contact
     db.session.add(radcheck)
     db.session.add(radgroup)
+    db.session.add(contact)
     db.session.commit()
 
 
