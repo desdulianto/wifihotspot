@@ -20,7 +20,7 @@ import string
 import json
 from subprocess import check_call
 
-from app import app, db, redis
+from app import app, db
 import models
 import forms
 

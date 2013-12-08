@@ -20,14 +20,6 @@ class RadiusDatabaseSetupForm(Form):
     password = PasswordField('Password')
 
 
-class SMSGatewaySetupForm(Form):
-    redis_host = TextField('Redis Host', default='localhost',
-            validators=[DataRequired()])
-    redis_user = TextField('Redis User')
-    redis_password = TextField('Redis Password')
-
-
 class SetupForm(Form):
     mikrotik = FormField(MikrotikSetupForm, 'Mikrotik')
     radius = FormField(RadiusDatabaseSetupForm, 'RADIUS')
-    sms_gateway = FormField(SMSGatewaySetupForm, 'SMS Gateway')
