@@ -18,6 +18,7 @@ from sqlalchemy.sql import func
 import random
 import string
 import json
+from subprocess import check_call
 
 from app import app, db, redis
 import models
@@ -64,8 +65,8 @@ def addToRadius(voucher, name, phone, groupname):
 
 
 def sendSMS(phone, text):
-    redis.rpush(app.config['SMS_KEY'], json.dumps(dict(Number=phone, 
-        Text=text)))
+    ret = check_call(['gammu-smsd-inject', 'TEXT', phone, 
+            '-text', text])
 
 
 @blueprint.route('/', endpoint='index')
@@ -82,7 +83,7 @@ def voucher_service_new(name, phone):
     addToRadius(voucher, name, phone, 'hotspot')
 
     # send to sms queue
-    #sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
+    sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
     return jsonify(status='OK', phone=phone, voucher=voucher)
 
 
