@@ -13,6 +13,7 @@ from flask import Blueprint
 from flask.ext.paginate import Pagination
 
 from jinja2 import Markup
+from sqlalchemy import and_
 from sqlalchemy.sql import func
 
 import random
@@ -41,9 +42,10 @@ def generateVoucher():
 
 
 def addContact(name, phone):
-    name = name.strip().title()
+    name = name.strip().lower()
     phone = phone.strip()
-    entry = models.Contact.query.get((name, phone))
+    entry = models.Contact.query.filter(and_(models.Contact.name == name,
+                models.Contact.phone == phone)).first()
     if entry is None:
         entry = models.Contact(name=name, phone=phone)
         db.session.add(entry)
@@ -83,7 +85,7 @@ def voucher_service_new(name, phone):
     addToRadius(voucher, name, phone, 'hotspot')
 
     # send to sms queue
-    sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
+    #sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
     return jsonify(status='OK', phone=phone, voucher=voucher)
 
 
@@ -95,8 +97,9 @@ def voucher_list():
     except ValueError:
         page = 1
 
-    vouchers = (models.RadCheck.query.order_by(models.RadCheck.name).
-            order_by(models.RadCheck.phone))
+    vouchers = (models.RadCheck.query.join(models.Contact).
+            order_by(models.Contact.name).
+            order_by(models.Contact.phone))
 
     pagination = Pagination(page=page, total=vouchers.count(), search=False,
             record_name='vouchers', per_page=per_page, bs_version=3)
