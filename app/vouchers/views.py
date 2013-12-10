@@ -13,7 +13,7 @@ from flask import Blueprint
 from flask.ext.paginate import Pagination
 
 from jinja2 import Markup
-from sqlalchemy import and_
+from sqlalchemy import and_, or_
 from sqlalchemy.sql import func
 
 import random
@@ -97,9 +97,17 @@ def voucher_list():
     except ValueError:
         page = 1
 
+    q = request.args.get('q', None)
+
     vouchers = (models.RadCheck.query.join(models.Contact).
             order_by(models.Contact.name).
             order_by(models.Contact.phone))
+
+    if q is not None:
+        vouchers = vouchers.filter(or_( 
+            models.RadCheck.username.like('%' + q +'%'),
+            models.Contact.name.like('%' + q + '%'),
+            models.Contact.phone.like('%' + q + '%') ))
 
     pagination = Pagination(page=page, total=vouchers.count(), search=False,
             record_name='vouchers', per_page=per_page, bs_version=3)
@@ -114,7 +122,8 @@ def voucher_list():
             create_url='.voucher_new',
             confirm_void=\
             'Yakin hapus (user yang sedang online akan di-disconnect)?',
-            pagination=pagination)
+            pagination=pagination,
+            search=True)
 
 
 @blueprint.route('/new', methods=['GET', 'POST'], endpoint='voucher_new')
