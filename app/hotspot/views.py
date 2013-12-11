@@ -1,4 +1,4 @@
-from flask import render_template, redirect, url_for
+from flask import render_template, redirect, url_for, request
 from flask import Blueprint
 
 from werkzeug.exceptions import NotFound
@@ -8,9 +8,18 @@ from app import app
 from app import db
 from app.vouchers import models as vouchers_models
 
+import forms
+
 blueprint = Blueprint('hotspot', __name__)
 
 resource = '/ip/hotspot/active'
+
+attributes_mapping = {'Mikrotik-Rate-Limit': 'Rate Limit (rx/tx)',
+                      'Session-Timeout'    : 'Session Time (seconds)',
+                      'Port-Limit'         : 'Max Session per-user',
+                      'Mikrotik-Xmit-Limit': 'Download Quota (bytes)',
+                      'Mikrotik-Recv-Limit': 'Upload Quota (bytes)'}
+
 
 def getContact(voucher):
     radcheck = (vouchers_models.RadCheck.query.
@@ -86,3 +95,82 @@ def disconnect_by_voucher(id):
 
     app.mikrotik.get_resource(resource).remove(id=user['id'])
     return redirect(url_for('.index'))
+
+
+@blueprint.route('/group-attribute',
+    endpoint='group_attribute_list')
+def group_attribute_list():
+    attributes = (vouchers_models.RadGroupReply.query.
+            filter_by(groupname=app.config['RADIUS_GROUP']).all())
+    return render_template('list.html', title='Group Attribute',
+            items=attributes,
+            columns=[dict(title='Attribute', field=lambda x:
+                attributes_mapping[x.attribute]),
+                    dict(title='Value', field='value')],
+            create_url='.edit_group_attribute')
+
+
+def getAttribute(predicate, attributes):
+    results = filter(lambda x: x.attribute == predicate, attributes) 
+    if len(results) == 1:
+        return results[0]
+    elif len(results) == 0:
+        return None
+    else:
+        return results
+
+
+@blueprint.route('/group-attribute/edit', methods=['GET', 'POST'],
+        endpoint='edit_group_attribute')
+def edit_group_attribute():
+    form = forms.GroupAttributeForm()
+    if request.method == 'GET':
+        attributes = (vouchers_models.RadGroupReply.query.
+                filter_by(groupname=app.config['RADIUS_GROUP']).all())
+        form.mikrotikRateLimit.data = getattr(getAttribute('Mikrotik-Rate-Limit'
+            , attributes), 'value', '')
+        form.sessionTimeout.data = getattr(getAttribute('Session-Timeout',
+            attributes), 'value', 0)
+        form.portLimit.data = getattr(getAttribute('Port-Limit', attributes),
+            'value', 0)
+        form.mikrotikRecvLimit.data = getattr(getAttribute('Mikrotik-Recv-Limit'
+            , attributes), 'value', 0)
+        form.mikrotikXmitLimit.data = getattr(getAttribute('Mikrotik-Xmit-Limit'
+            , attributes), 'value', 0)
+    if form.validate_on_submit():
+        attributes = (vouchers_models.RadGroupReply.query.
+                filter_by(groupname=app.config['RADIUS_GROUP']).all())
+
+        def update_attribute(attrname, predicate, data, attributes):
+            attr = getAttribute(attrname, attributes)
+            if predicate(data):
+                if attr is not None:
+                    db.session.delete(attr)
+            else:
+                if attr is None:
+                    attr = vouchers_models.RadGroupReply(
+                            groupname=app.config['RADIUS_GROUP'],
+                            attribute=attrname,
+                            op = ':=', value=data)
+                else:
+                    attr.value = data
+                db.session.add(attr)
+
+        update_attribute('Mikrotik-Rate-Limit',
+                lambda x: x == 0, form.mikrotikRateLimit.data, attributes)
+        update_attribute('Session-Timeout', lambda x: x == 0,
+                form.sessionTimeout.data, attributes)
+        update_attribute('Port-Limit', lambda x: x == 1,
+                form.portLimit.data, attributes)
+        update_attribute('Mikrotik-Recv-Limit', lambda x: x == 0,
+                form.mikrotikRecvLimit.data, attributes)
+        update_attribute('Mikrotik-Xmit-Limit', lambda x: x == 0,
+                form.mikrotikXmitLimit.data, attributes)
+
+        db.session.commit()
+
+        return redirect(url_for('.group_attribute_list'))
+
+    return render_template('form_complex.html', title='Group Attribute',
+            fields=['mikrotikRateLimit', 'sessionTimeout', 'portLimit', 
+                'mikrotikRecvLimit', 'mikrotikXmitLimit'], form=form)

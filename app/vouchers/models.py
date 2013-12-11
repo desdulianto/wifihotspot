@@ -34,6 +34,18 @@ class RadUserGroup(db.Model):
     priority = db.Column(db.Integer, nullable=False, default=0)
 
 
+class RadGroupReply(db.Model):
+    __tablename__ = 'radgroupreply'
+    __bind_key__  = 'radius'
+    __table_args__ = (db.Index('radgroupreply_groupname', 'groupname',
+        'attribute'),)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    groupname = db.Column(db.String(64), nullable=False, default='')
+    attribute = db.Column(db.String(64), nullable=False, default='')
+    op        = db.Column(db.String(2), nullable=False, default='=')
+    value     = db.Column(db.String(253), nullable=False, default='')
+
+
 class Contact(db.Model):
     __tablename__ = 'contact'
     __bind_key__ = 'radius'
