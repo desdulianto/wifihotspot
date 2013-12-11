@@ -36,6 +36,15 @@ def getContact(voucher):
 
 @blueprint.route('/', endpoint='index')
 def index():
+    menus = [dict(title='Daftar User Online', url=url_for('.list')),
+             dict(title='Hotspot Parameter',
+             url=url_for('.group_attribute_list'))]
+    return render_template('module_index.html', menus=menus)
+
+
+
+@blueprint.route('/list', endpoint='list')
+def list_view():
 
     active_users = app.mikrotik.get_resource(resource).get()
     for user in active_users:
@@ -66,7 +75,7 @@ def detail_by_id(id):
 @blueprint.route('/disconnect/<id>', endpoint='disconnect_by_id')
 def disconnect_by_id(id):
     app.mikrotik.get_resource(resource).remove(id=id)
-    return redirect(url_for('.index'))
+    return redirect(url_for('.list'))
 
 
 @blueprint.route('/disconnect-remove/<id>', endpoint='disconnect_remove_by_id')
@@ -83,7 +92,7 @@ def disconnect_remove_by_id(id):
         db.session.delete(radcheck)
         db.session.commit()
 
-    return redirect(url_for('.index'))
+    return redirect(url_for('.list'))
 
 
 @blueprint.route('/disconnect/voucher/<id>', endpoint='disconnect_by_voucher')
@@ -94,7 +103,7 @@ def disconnect_by_voucher(id):
         raise NotFound()
 
     app.mikrotik.get_resource(resource).remove(id=user['id'])
-    return redirect(url_for('.index'))
+    return redirect(url_for('.list'))
 
 
 @blueprint.route('/group-attribute',
