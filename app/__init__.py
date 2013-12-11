@@ -5,9 +5,8 @@ from flask.ext.principal import Principal, Permission, RoleNeed, \
 from flask.ext.login import LoginManager
 from werkzeug.exceptions import InternalServerError
 
-import redis
-
 import sqlalchemy.exc
+import rosapi
 
 
 app = Flask(__name__)
@@ -43,7 +42,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = config.get('flask',
 
 # mikrotik
 app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')
-app.config['MIKROTIK_PORT'] = config.get('mikrotik', 'port')
+app.config['MIKROTIK_PORT'] = config.getint('mikrotik', 'port')
 app.config['MIKROTIK_USER'] = config.get('mikrotik', 'user')
 app.config['MIKROTIK_PASSWORD'] = config.get('mikrotik', 'password')
 
@@ -70,6 +69,15 @@ principal = Principal(app)
 
 login_manager.login_view = 'login'
 login_manager.login_message = 'Silahkan login terlebih dahulu'
+
+# mikrotik
+app.mikrotik = rosapi.RouterboardAPI(host=app.config['MIKROTIK_HOST'],
+        username=app.config['MIKROTIK_USER'],
+        password=app.config['MIKROTIK_PASSWORD'],
+        port=app.config['MIKROTIK_PORT'])
+app.mikrotik.connect()
+app.mikrotik.login()
+
 
 # handle exceptions
 @app.errorhandler(PermissionDenied)
@@ -136,8 +144,9 @@ import views
 from users.views import blueprint as users_blueprint
 from setup.views import blueprint as setup_blueprint
 from vouchers.views import blueprint as vouchers_blueprint
+from hotspot.views import blueprint as hotspot_blueprint
 
 app.register_blueprint(users_blueprint, url_prefix='/users')
 app.register_blueprint(setup_blueprint, url_prefix='/setup')
 app.register_blueprint(vouchers_blueprint, url_prefix='/vouchers')
-
+app.register_blueprint(hotspot_blueprint, url_prefix='/hotspot')
