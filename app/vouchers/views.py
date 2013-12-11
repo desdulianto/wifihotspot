@@ -99,7 +99,7 @@ def voucher_list():
 
     q = request.args.get('q', None)
 
-    vouchers = (models.RadCheck.query.join(models.Contact).
+    vouchers = (models.RadCheck.query.outerjoin(models.Contact).
             order_by(models.Contact.name).
             order_by(models.Contact.phone))
 
@@ -113,8 +113,10 @@ def voucher_list():
             record_name='vouchers', per_page=per_page, bs_version=3)
     return render_template('list.html',
             items=vouchers.limit(per_page).offset((page-1)*per_page).all(),
-            columns=[dict(title='Nama', field=lambda x: x.contact.name),
-                     dict(title='Telepon', field=lambda x: x.contact.phone),
+            columns=[dict(title='Nama', field=lambda x: x.contact.name if
+                x.contact is not None else '-'),
+                     dict(title='Telepon', field=lambda x: x.contact.phone if
+                         x.contact is not None else '-'),
                      dict(title='No. Voucher', field='username'),
                      dict(title='Waktu Generate', field='time')],
             title='Daftar Voucher',
