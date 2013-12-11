@@ -22,6 +22,7 @@ import json
 from subprocess import check_call
 
 from app import app, db
+from app.hotspot.views import disconnect_by_voucher
 import models
 import forms
 
@@ -146,6 +147,7 @@ def voucher_new():
 @blueprint.route('/delete/<int:id>', methods=['GET', 'POST'], endpoint='voucher_delete')
 def voucher_delete(id):
     voucher = models.RadCheck.query.get_or_404(id)
+    disconnect_by_voucher(voucher.username)
     db.session.delete(voucher)
     db.session.commit()
     flash(Markup(
