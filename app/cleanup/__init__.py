@@ -6,24 +6,20 @@ from datetime import datetime, timedelta
 
 from app import app, db
 
-# read config
-config = ConfigParser.ConfigParser()
-config.read('config.ini')
-CONFIG = dict()
-
-def databaseStartup():
-    engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
-    session = sessionmaker(bind=engine)
-    return session()
-
-
 def cleanup():
-    session = databaseStartup()
-
+    session_time = (models.RadGroupReply.query.
+            filter_by(attribute='Session-Time').first())
+    if session_time is None:
+        session_time = 86400
+    else:
+        try:
+            session_time = int(session_time.value)
+        except:
+            session_time = 86400
     # query 
-    days = timedelta(minutes=1)
+    delta = timedelta(seconds=session_time)
     vouchers = (models.RadCheck.query.
-            filter(models.RadCheck.time<=datetime.today()-days).all())
+            filter(models.RadCheck.time<=datetime.today()-delta).all())
     for voucher in vouchers:
         db.session.delete(voucher)
     db.session.commit()
