@@ -53,6 +53,7 @@ app.config['RADIUS_PORT'] = config.get('radius', 'port')
 app.config['RADIUS_DBNAME'] = config.get('radius', 'dbname')
 app.config['RADIUS_USER'] = config.get('radius', 'user')
 app.config['RADIUS_PASSWORD'] = config.get('radius', 'password')
+app.config['RADIUS_GROUP'] = config.get('radius', 'group')
 app.config['SQLALCHEMY_BINDS'] = {'radius': '%s://%s:%s@%s:%s/%s' %
         (app.config['RADIUS_DBTYPE'], app.config['RADIUS_USER'],
         app.config['RADIUS_PASSWORD'], app.config['RADIUS_HOST'],

@@ -82,7 +82,7 @@ def voucher_service_new(name, phone):
     voucher = generateVoucher()
 
     # save to radius db
-    addToRadius(voucher, name, phone, 'hotspot')
+    addToRadius(voucher, name, phone, app.config['RADIUS_GROUP'])
 
     # send to sms queue
     #sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
@@ -133,7 +133,8 @@ def voucher_new():
     form = forms.VoucherForm()
     if form.validate_on_submit():
         voucher = generateVoucher()
-        addToRadius(voucher, form.name.data, form.phone.data, 'hotspot') 
+        addToRadius(voucher, form.name.data, form.phone.data,
+            app.config['RADIUS_GROUP']) 
         flash(Markup(
         '<h1>Voucher untuk <strong>{name} ({phone}): {voucher}</strong></h1>'.
                 format(name=form.name.data.title(), phone=form.phone.data,
