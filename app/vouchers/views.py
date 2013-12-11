@@ -9,6 +9,7 @@
 
 from flask import render_template, jsonify, flash, redirect, url_for, request
 from flask import Blueprint
+from flask.ext.login import login_required
 
 from flask.ext.paginate import Pagination
 
@@ -73,6 +74,7 @@ def sendSMS(phone, text):
 
 
 @blueprint.route('/', endpoint='index')
+@login_required
 def index():
     menus = [dict(title='Daftar Voucher', url=url_for('.voucher_list')),
              dict(title='Template Pesan',
@@ -80,7 +82,7 @@ def index():
     return render_template('module_index.html', menus=menus)
 
 
-@blueprint.route('/<name>/<phone>', methods=['POST'],
+@blueprint.route('/<name>/<phone>', methods=['GET'],
         endpoint='voucher_service_new')
 def voucher_service_new(name, phone):
     voucher = generateVoucher()
@@ -91,11 +93,12 @@ def voucher_service_new(name, phone):
     # send to sms queue
     sms_text = render_template('voucher_message.txt', name=name, phone=phone,
             voucher=voucher)
-    sendSMS(phone, text=sms_text)
+    #sendSMS(phone, text=sms_text)
     return jsonify(status='OK', phone=phone, voucher=voucher)
 
 
 @blueprint.route('/list', methods=['GET'], endpoint='voucher_list')
+@login_required
 def voucher_list():
     per_page=20
     try:
@@ -135,6 +138,7 @@ def voucher_list():
 
 
 @blueprint.route('/new', methods=['GET', 'POST'], endpoint='voucher_new')
+@login_required
 def voucher_new():
     form = forms.VoucherForm()
     if form.validate_on_submit():
@@ -151,6 +155,7 @@ def voucher_new():
 
 
 @blueprint.route('/delete/<int:id>', methods=['GET', 'POST'], endpoint='voucher_delete')
+@login_required
 def voucher_delete(id):
     voucher = models.RadCheck.query.get_or_404(id)
     try:
@@ -172,6 +177,7 @@ def voucher_delete(id):
 
 @blueprint.route('/template', methods=['GET', 'POST'],
         endpoint='edit_message_template')
+@login_required
 def edit_message_template():
     form = forms.VoucherMessageForm()
     if request.method == 'GET':

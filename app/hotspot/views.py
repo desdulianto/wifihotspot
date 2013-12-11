@@ -1,5 +1,6 @@
 from flask import render_template, redirect, url_for, request
 from flask import Blueprint
+from flask.ext.login import login_required
 
 from werkzeug.exceptions import NotFound
 from rosapi import RosAPIError
@@ -35,6 +36,7 @@ def getContact(voucher):
 
 
 @blueprint.route('/', endpoint='index')
+@login_required
 def index():
     menus = [dict(title='Daftar User Online', url=url_for('.list')),
              dict(title='Hotspot Parameter',
@@ -44,6 +46,7 @@ def index():
 
 
 @blueprint.route('/list', endpoint='list')
+@login_required
 def list_view():
 
     active_users = app.mikrotik.get_resource(resource).get()
@@ -63,6 +66,7 @@ def list_view():
 
 
 @blueprint.route('/<id>', endpoint='detail_by_id')
+@login_required
 def detail_by_id(id):
     try:
         user = app.mikrotik.get_resource(resource).get(id=id)[0]
@@ -73,12 +77,14 @@ def detail_by_id(id):
 
 
 @blueprint.route('/disconnect/<id>', endpoint='disconnect_by_id')
+@login_required
 def disconnect_by_id(id):
     app.mikrotik.get_resource(resource).remove(id=id)
     return redirect(url_for('.list'))
 
 
 @blueprint.route('/disconnect-remove/<id>', endpoint='disconnect_remove_by_id')
+@login_required
 def disconnect_remove_by_id(id):
     try:
         user = app.mikrotik.get_resource(resource).get(id=id)[0]
@@ -96,6 +102,7 @@ def disconnect_remove_by_id(id):
 
 
 @blueprint.route('/disconnect/voucher/<id>', endpoint='disconnect_by_voucher')
+@login_required
 def disconnect_by_voucher(id):
     try:
         user = app.mikrotik.get_resource(resource).get(user=id)[0]
@@ -108,6 +115,7 @@ def disconnect_by_voucher(id):
 
 @blueprint.route('/group-attribute',
     endpoint='group_attribute_list')
+@login_required
 def group_attribute_list():
     attributes = (vouchers_models.RadGroupReply.query.
             filter_by(groupname=app.config['RADIUS_GROUP']).all())
@@ -131,6 +139,7 @@ def getAttribute(predicate, attributes):
 
 @blueprint.route('/group-attribute/edit', methods=['GET', 'POST'],
         endpoint='edit_group_attribute')
+@login_required
 def edit_group_attribute():
     form = forms.GroupAttributeForm()
     if request.method == 'GET':
