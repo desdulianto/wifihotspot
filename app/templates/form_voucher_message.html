@@ -1,0 +1,89 @@
+{% extends "form.html" %}
+
+{% block form_body %}
+<form action="" method="post" class="form-horizontal" role="form">
+    {{ form.hidden_tag() }}
+
+    {% for field in fields %}
+    {% if field is iterable and field is not string %}
+    {% if field.1 is isdict %}
+    {% set input = form|attr(field.0) %}
+    <div class="form-group {% if input.errors %}has-error{%endif%}">
+        {{input.label(class="control-label col-md-3")}}
+        <div class="col-md-9">
+            {{input(class="form-control", placeholder=input.label.text,
+            **field.1)}}
+        </div>
+        {% if input.errors %}
+        <ul class="list-inline col-md-9 col-md-offset-3">
+            {% for error in input.errors %}
+            <li>{{error}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% else %}
+    {% set label = field.0 %}
+    <div class="form-group">
+        <label class="col-md-3 control-label">{{label}}</label>
+        {% for f in field.1 %}
+        {% set col = "col-md-" + ((9/field.1|length)|int)|string %}
+        {% if f is iterable and f is not string %}
+        {% set input = form|attr(f.0) %}
+        {% else %}
+        {% set input = form|attr(f) %}
+        {% endif %}
+        <div class="{{col}} {% if input.errors %}has-error{% endif%}">
+        {% if f is iterable and f is not string %}
+        {{input.label(class="control-label")}}
+        {{input(class="form-control", placeholder=input.label.text, **f.1)}}
+        {% else %}
+        {{input.label(class="control-label")}}
+        {{input(class="form-control", placeholder=input.label.text)}}
+        {% endif %}
+        {% if input.errors %}
+        <ul class="list-inline">
+            {% for error in input.errors %}
+            <li>{{error}}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% else %}
+    {% set input = form | attr(field) %}
+    <div class="form-group {% if input.errors %}has-error{%endif%}">
+        {{ input.label(class="col-md-3 control-label") }} <div class="col-md-9">{{ input(class="form-control",
+            placeholder=input.label.text) }}</div>
+        {% if input.errors %}
+        <ul class="list-inline col-md-9 col-md-offset-3">
+            {% for error in input.errors %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% raw %}
+    <div class="col-md-9 col-md-offset-3">
+        <ul>
+            <li><strong>{{voucher}}</strong> -- Nomor Voucher</li>
+            <li><strong>{{name}}</strong> -- Nama</li>
+            <li><strong>{{phone}}</strong> -- Nomor Telepon</li>
+        </ul>
+    </div>
+    {% endraw %}
+
+    <div class="pull-right">
+        <a class="btn btn-default" href="{%if
+            request.referrer -%}{{request.referrer}}{%- else
+            -%}{{url_for(request.blueprint + '.index')}}{%- endif%}" role="button">Cancel</a>
+        <button type="submit" class="btn btn-primary">{% if
+            save_caption %} {{ save_caption }} {% else %} Save {% endif
+            %}</button>
+    </div>
+</form>
+{% endblock %}

@@ -6,4 +6,4 @@ from app import app
 def before_request():
     if getattr(g, 'menus', None) is None:
         g.menus = []
-    g.menus.append( dict(title='Vouchers', url=url_for('vouchers.voucher_list')))
+    g.menus.append( dict(title='Vouchers', url=url_for('vouchers.index')))

@@ -20,6 +20,7 @@ import random
 import string
 import json
 from subprocess import check_call
+import os
 
 from app import app, db
 import models
@@ -73,7 +74,10 @@ def sendSMS(phone, text):
 
 @blueprint.route('/', endpoint='index')
 def index():
-    return render_template('index.html')
+    menus = [dict(title='Daftar Voucher', url=url_for('.voucher_list')),
+             dict(title='Template Pesan',
+             url=url_for('.edit_message_template'))]
+    return render_template('module_index.html', menus=menus)
 
 
 @blueprint.route('/<name>/<phone>', methods=['POST'],
@@ -85,7 +89,9 @@ def voucher_service_new(name, phone):
     addToRadius(voucher, name, phone, app.config['RADIUS_GROUP'])
 
     # send to sms queue
-    #sendSMS(phone, text='Nomor voucher Wifi HotSpot: %s' % voucher)
+    sms_text = render_template('voucher_message.txt', name=name, phone=phone,
+            voucher=voucher)
+    sendSMS(phone, text=sms_text)
     return jsonify(status='OK', phone=phone, voucher=voucher)
 
 
@@ -162,3 +168,19 @@ def voucher_delete(id):
         '<h1>Voucher {voucher} telah dihapus!</h1>'.
         format(voucher=voucher.username)), 'success')
     return redirect(url_for('.voucher_list'))
+
+
+@blueprint.route('/template', methods=['GET', 'POST'],
+        endpoint='edit_message_template')
+def edit_message_template():
+    form = forms.VoucherMessageForm()
+    if request.method == 'GET':
+        with app.open_resource('templates/voucher_message.txt') as f:
+            form.message.data = f.read()
+    if form.validate_on_submit():
+        with open(os.path.join(app.root_path, 'templates/voucher_message.txt'),
+            'w') as f:
+            f.write(form.message.data)
+        return redirect(url_for('.index'))
+    return render_template('form_voucher_message.html', title='Format Pesan Voucher',
+            fields=[('message', {'rows': 5})], form=form)
