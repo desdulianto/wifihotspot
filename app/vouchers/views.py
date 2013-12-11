@@ -7,7 +7,8 @@
     :copyright: (c) 2013 by Des Dulianto
 """
 
-from flask import render_template, jsonify, flash, redirect, url_for, request
+from flask import render_template, jsonify, flash, redirect, url_for, \
+        request, current_app
 from flask import Blueprint
 from flask.ext.login import login_required
 
@@ -22,6 +23,7 @@ import string
 import json
 from subprocess import check_call
 import os
+from functools import wraps
 
 from app import app, db
 import models
@@ -30,9 +32,23 @@ import forms
 
 blueprint = Blueprint('vouchers', __name__)
 
+def jsonp(func):
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        callback = request.args.get('callback', False)
+        if callback:
+            data = str(func(*args, **kwargs).data)
+            content = str(callback) + '(' + data + ')'
+            mimetype = 'application/javascript'
+            return current_app.response_class(content, mimetype=mimetype)
+        else:
+            return func(*args, **kwargs)
+    return decorated_function
+
 def generateVoucher():
-    symbols = app.config.get('VOUCHER_SYMBOLS', string.ascii_letters +
-            string.digits)
+    symbols = app.config.get('VOUCHER_SYMBOLS',
+            'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ0123456789'
+            )
     length = app.config.get('VOUCHER_LENGTH', 8)
 
     while True:
@@ -84,6 +100,7 @@ def index():
 
 @blueprint.route('/<name>/<phone>', methods=['GET'],
         endpoint='voucher_service_new')
+@jsonp
 def voucher_service_new(name, phone):
     voucher = generateVoucher()
 
