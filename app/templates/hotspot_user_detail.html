@@ -17,8 +17,10 @@
         </dl>
     </div>
     <div class="panel-footer">
-        <a id="disconnect" class="btn btn-danger" href="{{url_for('.disconnect_by_id',
-            id=user.id)}}">Disconnect</a>
+        <a id="disconnect" class="btn btn-danger" href="{{url_for('.disconnect_by_id', id=user.id)}}">Disconnect</a>
+        <a id="disconnect_remove" class="btn btn-danger"
+            href="{{url_for('.disconnect_remove_by_id', id=user.id)}}">Disconnect &
+            Remove Voucher</a>
         <a id="cancel" class="btn btn-default" href="{{url_for('.index')}}">Cancel</a>
     </div>
 </div>
@@ -33,5 +35,12 @@
             if (! sure)
                 event.preventDefault();
             });
+    $('#disconnect_remove').click(function(event) {
+            var sure = confirm({% if confirm_void
+                %}'{{confirm_void}}'{%else%}'Are you sure?'{%endif%});
+            if (! sure)
+                event.preventDefault();
+
+        });
 </script>
 {% endblock %}

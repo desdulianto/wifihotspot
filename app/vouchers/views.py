@@ -22,7 +22,6 @@ import json
 from subprocess import check_call
 
 from app import app, db
-from app.hotspot.views import disconnect_by_voucher
 import models
 import forms
 
@@ -147,7 +146,15 @@ def voucher_new():
 @blueprint.route('/delete/<int:id>', methods=['GET', 'POST'], endpoint='voucher_delete')
 def voucher_delete(id):
     voucher = models.RadCheck.query.get_or_404(id)
-    disconnect_by_voucher(voucher.username)
+    try:
+        user = app.mikrotik.get_resource('/ip/hotspot/active').get(user=voucher.username)[0]
+    except IndexError:
+        pass
+    else:
+        try:
+            app.mikrotik.get_resource('/ip/hotspot/active').remove(id=user['id'])
+        except:
+            pass
     db.session.delete(voucher)
     db.session.commit()
     flash(Markup(

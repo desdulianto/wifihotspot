@@ -5,8 +5,8 @@ from werkzeug.exceptions import NotFound
 from rosapi import RosAPIError
 
 from app import app
+from app import db
 from app.vouchers import models as vouchers_models
-
 
 blueprint = Blueprint('hotspot', __name__)
 
@@ -57,6 +57,23 @@ def detail_by_id(id):
 @blueprint.route('/disconnect/<id>', endpoint='disconnect_by_id')
 def disconnect_by_id(id):
     app.mikrotik.get_resource(resource).remove(id=id)
+    return redirect(url_for('.index'))
+
+
+@blueprint.route('/disconnect-remove/<id>', endpoint='disconnect_remove_by_id')
+def disconnect_remove_by_id(id):
+    try:
+        user = app.mikrotik.get_resource(resource).get(id=id)[0]
+        radcheck = (vouchers_models.RadCheck.query.
+                filter_by(username=user['user']).first())
+    except IndexError:
+        raise NotFound()
+
+    app.mikrotik.get_resource(resource).remove(id=id)
+    if radcheck is not None:
+        db.session.delete(radcheck)
+        db.session.commit()
+
     return redirect(url_for('.index'))
 
 
