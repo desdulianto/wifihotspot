@@ -223,6 +223,7 @@ def edit_group_attribute():
 
 
 @blueprint.route('/ip-bindings', methods=['GET'], endpoint='ip_bindings_list')
+@login_required
 def ip_bindings_list():
     bindings = app.mikrotik.get_resource('/ip/hotspot/ip-binding').get()
     return render_template('list.html', title='IP Bindings',
