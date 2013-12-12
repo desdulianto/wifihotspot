@@ -10,7 +10,7 @@ class GroupAttributeForm(Form):
     sessionTimeout    = IntegerField('Session Time (seconds)', default=0)
     portLimit         = IntegerField('Sessions per-user', default=1)
 
-    def mikrotikRateLimit_validate(form, field):
+    def validate_mikrotikRateLimit(form, field):
         if len(field.data.strip()) == 0:
             return 
 
@@ -25,27 +25,27 @@ class GroupAttributeForm(Form):
         if rx < 0 or tx < 0:
             raise ValidationError('Wrong Value')
 
-    def mikrotikRecvLimit_validate(form, field):
+    def validate_mikrotikRecvLimit(form, field):
         limit = field.data
 
         if limit < 0:
             raise ValidationError('Wrong Value')
 
 
-    def mikrotikXmitLimit_validate(form, field):
+    def validate_mikrotikXmitLimit(form, field):
         limit = field.data
 
         if limit < 0:
             raise ValidationError('Wrong Value')
 
-    def sessionTimeout_validate(form, field):
+    def validate_sessionTimeout(form, field):
         timeout = field.data
 
         if timeout < 0:
             raise ValidationError('Wrong Value')
 
 
-    def portLimit_validate(form, field):
+    def validate_portLimit(form, field):
         limit = field.data
 
         if limit < 1:

@@ -178,7 +178,7 @@ def edit_group_attribute():
         form.sessionTimeout.data = getattr(getAttribute('Session-Timeout',
             attributes), 'value', 0)
         form.portLimit.data = getattr(getAttribute('Port-Limit', attributes),
-            'value', 0)
+            'value', 1)
         form.mikrotikRecvLimit.data = getattr(getAttribute('Mikrotik-Recv-Limit'
             , attributes), 'value', 0)
         form.mikrotikXmitLimit.data = getattr(getAttribute('Mikrotik-Xmit-Limit'
