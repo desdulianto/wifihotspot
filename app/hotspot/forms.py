@@ -1,6 +1,18 @@
 from flask.ext.wtf import Form
-from wtforms import TextField, IntegerField
-from wtforms.validators import ValidationError
+from wtforms import TextField, IntegerField, RadioField, BooleanField
+from wtforms.validators import ValidationError, IPAddress, DataRequired
+
+
+def MACAddress(message=None):
+    import re
+
+    def inner(form, field):
+        address = field.data
+        address_type = form.address_type.data
+        mac = re.compile('^([a-fA-F0-9]{2}[:-]){5}[a-fA-F0-9]{2}$')
+        if mac.match(address) is None:
+            raise ValidationError(message)
+    return inner
 
 
 class GroupAttributeForm(Form):
@@ -58,3 +70,24 @@ class OnlineUserFilterForm(Form):
     user = TextField('Voucher')
     address = TextField('IP Address')
     server = TextField('Hotspot')
+
+
+class IpBindingForm(Form):
+    address = TextField('Address')
+    address_type = RadioField('Address Type', choices=[('mac', 'MAC Address'),
+                                                        ('ip' , 'IP Address')],
+                                                        default='mac')
+    server  = TextField('Server')
+    type    = RadioField('Action', choices=[('bypassed', 'Bypass'),
+                                          ('blocked', 'Block')],
+                                          default='bypassed')
+    comment = TextField('Comment')
+    enabled = BooleanField('Enabled')
+
+    def validate_address(form, field):
+        address_type = form.address_type.data
+
+        if address_type == 'ip':
+            IPAddress('Invalid IP address')(form, field)
+        else:
+            MACAddress('Invalid MAC address')(form, field)

@@ -236,4 +236,84 @@ def ip_bindings_list():
                 dict(title='Comment', field=lambda x: x.get('comment', '')),
                 dict(title='Enabled', field=lambda x: x['disabled'] == 'false')
                 ],
+                create_url='.ip_bindings_new',
+                void_url='.ip_bindings_delete',
+                edit_url='.ip_bindings_edit'
             )
+
+
+@blueprint.route('/ip-bindings/new', methods=['GET', 'POST'],
+        endpoint='ip_bindings_new')
+@login_required
+def ip_bindings_new():
+    form = forms.IpBindingForm()
+    if form.validate_on_submit():
+        kwargs = dict()
+        if form.address_type.data == 'ip':
+            kwargs['address'] = form.address.data.strip()
+        else:
+            kwargs['mac-address'] = form.address.data.strip().replace('-', ':')
+        kwargs['type'] = form.type.data.strip()
+        if form.server.data.strip() != '':
+            kwargs['server'] = form.server.data.strip()
+
+        res = app.mikrotik.get_resource('/ip/hotspot/ip-binding')
+        res.add(**kwargs)
+        return redirect(url_for('.ip_bindings_list'))
+    return render_template('form_complex.html', title='New Host Bypass/Block',
+            fields=[('Host Address', ['address_type', 'address']), 'server',
+                'type', 'comment'], form=form)
+
+
+@blueprint.route('/ip-bindings/delete/<id>', methods=['GET'],
+        endpoint='ip_bindings_delete')
+@login_required
+def ip_binding_delete(id):
+    res = app.mikrotik.get_resource('/ip/hotspot/ip-binding')
+    res.remove(id=id)
+    return redirect(url_for('.ip_bindings_list'))
+
+
+@blueprint.route('/ip-bindings/<id>', methods=['GET', 'POST'],
+        endpoint='ip_bindings_edit')
+@login_required
+def ip_bindings_edit(id):
+    res = app.mikrotik.get_resource('/ip/hotspot/ip-binding')
+    form = forms.IpBindingForm(request.form)
+    if request.method == 'GET':
+        binding = res.get(id=id)
+        if len(binding) == 0:
+            raise NotFound
+        binding = binding[0]
+        form.address.data = (binding.get('mac-address', False) or
+            binding.get('address'))
+        form.type.data = binding.get('type')
+        if binding.get('mac-address', False):
+            form.address_type.data = 'mac'
+        else:
+            form.address_type.data = 'ip'
+        form.server.data = binding.get('server', '')
+        form.comment.data = binding.get('comment', '')
+        form.enabled.data = binding.get('disabled', 'false') == 'false'
+    if form.validate_on_submit():
+        kwargs = dict(id=id)
+        if form.address_type.data == 'ip':
+            kwargs['mac-address'] = '0:0:0:0:0:0'
+            kwargs['address'] = form.address.data.strip()
+        else:
+            kwargs['address'] = '0.0.0.0'
+            kwargs['mac-address'] = form.address.data.strip().replace('-', ':')
+        kwargs['type'] = form.type.data.strip()
+        if form.server.data.strip() != '':
+            kwargs['server'] = form.server.data.strip()
+        kwargs['disabled'] = 'false' if form.enabled.data else 'true'
+        kwargs['comment'] = form.comment.data
+
+        print kwargs
+
+        res = app.mikrotik.get_resource('/ip/hotspot/ip-binding')
+        res.set(**kwargs)
+        return redirect(url_for('.ip_bindings_list'))
+    return render_template('form_complex.html', title='Edit Host Bypass/Block',
+            fields=[('Host Address', ['address_type', 'address']), 'server',
+                'type', 'comment', 'enabled'], form=form)

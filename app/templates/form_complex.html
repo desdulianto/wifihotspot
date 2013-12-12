@@ -1,5 +1,15 @@
 {% extends "form.html" %}
 
+{% macro radiofield(input) %}
+{% for choice in input %}
+<div class="radio">
+    <label>
+        {{choice}} {{choice.label}}
+    </label>
+</div>
+{% endfor %}
+{% endmacro %}
+
 {% block form_body %}
 <form action="" method="post" class="form-horizontal" role="form">
     {{ form.hidden_tag() }}
@@ -11,8 +21,12 @@
     <div class="form-group {% if input.errors %}has-error{%endif%}">
         {{input.label(class="control-label col-md-3")}}
         <div class="col-md-9">
-            {{input(class="form-control", placeholder=input.label.text,
-            **field.1)}}
+            {% if input.type.endswith("RadioField") %}
+                {{radiofield(input)}}
+            {% else %}
+                {{input(class="form-control", placeholder=input.label.text,
+                **field.1)}}
+            {% endif %}
         </div>
         {% if input.errors %}
         <ul class="list-inline col-md-9 col-md-offset-3">
@@ -36,10 +50,18 @@
         <div class="{{col}} {% if input.errors %}has-error{% endif%}">
         {% if f is iterable and f is not string %}
         {{input.label(class="control-label")}}
+        {% if input.type.endswith("RadioField") %}
+            {{radiofield(input)}}
+        {% else %}
         {{input(class="form-control", placeholder=input.label.text, **f.1)}}
+        {% endif %}
         {% else %}
         {{input.label(class="control-label")}}
+        {% if input.type.endswith("RadioField") %}
+            {{radiofield(input)}}
+        {% else %}
         {{input(class="form-control", placeholder=input.label.text)}}
+        {% endif %}
         {% endif %}
         {% if input.errors %}
         <ul class="list-inline">
@@ -55,8 +77,14 @@
     {% else %}
     {% set input = form | attr(field) %}
     <div class="form-group {% if input.errors %}has-error{%endif%}">
-        {{ input.label(class="col-md-3 control-label") }} <div class="col-md-9">{{ input(class="form-control",
-            placeholder=input.label.text) }}</div>
+        {{ input.label(class="col-md-3 control-label") }} 
+        <div class="col-md-9">
+            {% if input.type.endswith("RadioField") %}
+                {{radiofield(input)}}
+            {% else %}
+            {{ input(class="form-control", placeholder=input.label.text) }}
+            {% endif %}
+        </div>
         {% if input.errors %}
         <ul class="list-inline col-md-9 col-md-offset-3">
             {% for error in input.errors %}
