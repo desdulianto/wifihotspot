@@ -34,7 +34,8 @@ def getContact(voucher):
 def index():
     menus = [dict(title='Daftar User Online', url=url_for('.list')),
              dict(title='Hotspot Parameter',
-             url=url_for('.group_attribute_list'))]
+             url=url_for('.group_attribute_list')),
+             dict(title='Hotspot Bypass/Block', url=url_for('.ip_bindings_list'))]
     return render_template('module_index.html', menus=menus)
 
 
@@ -42,6 +43,7 @@ def index():
 @blueprint.route('/list', endpoint='list')
 @login_required
 def list_view():
+    form = forms.OnlineUserFilterForm(formdata=request.args)
     kwargs = dict()
     username = None
     phone = None
@@ -82,7 +84,7 @@ def list_view():
                 dict(title='Hotspot', field=lambda x: x['server']),
                 dict(title='Uptime', field=lambda x: x['uptime']),
                 ], void_url='.disconnect_by_id',
-                edit_url='.detail_by_id')
+                edit_url='.detail_by_id', form=form)
 
 
 @blueprint.route('/<id>', endpoint='detail_by_id')
@@ -218,3 +220,17 @@ def edit_group_attribute():
     return render_template('form_complex.html', title='Group Attribute',
             fields=['mikrotikRateLimit', 'sessionTimeout', 'portLimit', 
                 'mikrotikRecvLimit', 'mikrotikXmitLimit'], form=form)
+
+
+@blueprint.route('/ip-bindings', methods=['GET'], endpoint='ip_bindings_list')
+def ip_bindings_list():
+    bindings = app.mikrotik.get_resource('/ip/hotspot/ip-binding').get()
+    return render_template('list.html', title='IP Bindings',
+            items=bindings,
+            columns=[
+                dict(title='MAC Address', field=lambda x: x['mac-address']),
+                dict(title='Type', field=lambda x: x['type']),
+                dict(title='Comment', field=lambda x: x['comment']),
+                dict(title='Enabled', field=lambda x: x['disabled'] == 'false')
+                ],
+            )
