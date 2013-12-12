@@ -50,3 +50,11 @@ class GroupAttributeForm(Form):
 
         if limit < 1:
             raise ValidationError('Wrong Value')
+
+
+class OnlineUserFilterForm(Form):
+    username = TextField('User Name')
+    phone = TextField('Phone')
+    user = TextField('Voucher')
+    address = TextField('IP Address')
+    server = TextField('Hotspot')

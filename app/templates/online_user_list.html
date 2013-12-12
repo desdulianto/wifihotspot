@@ -2,9 +2,10 @@
 
 {% macro formgroup(name, label) %}
 <div class="form-group col-md-2">
-    <label class="sr-only" for="{{name}}">{{label}}</label>
-    <input type="text" class="form-control input-sm" id="{{name}}"
-     name="{{name}}" placeholder="{{label}}">
+    {% set control = form|attr(name) %}
+    {{ control.label(class="sr-only") }}
+    {{ control(class="form-control input-sm", 
+       placeholder=control.label.text) }}
 </div>
 {% endmacro %}
 
