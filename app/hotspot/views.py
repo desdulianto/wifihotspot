@@ -196,8 +196,8 @@ def edit_group_attribute():
                 if attr is None:
                     attr = vouchers_models.RadGroupReply(
                             groupname=app.config['RADIUS_GROUP'],
-                            attribute=attrname,
-                            op = ':=', value=data)
+                            attribute=attrname.strip(),
+                            op = ':=', value=data.strip())
                 else:
                     attr.value = data
                 db.session.add(attr)
