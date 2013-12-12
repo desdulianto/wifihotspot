@@ -15,13 +15,6 @@ blueprint = Blueprint('hotspot', __name__)
 
 resource = '/ip/hotspot/active'
 
-attributes_mapping = {'Mikrotik-Rate-Limit': 'Rate Limit (rx/tx)',
-                      'Session-Timeout'    : 'Session Time (seconds)',
-                      'Port-Limit'         : 'Max Session per-user',
-                      'Mikrotik-Xmit-Limit': 'Download Quota (bytes)',
-                      'Mikrotik-Recv-Limit': 'Upload Quota (bytes)'}
-
-
 def getContact(voucher):
     radcheck = (vouchers_models.RadCheck.query.
             filter(vouchers_models.RadCheck.username==voucher['user']).first())
@@ -117,6 +110,12 @@ def disconnect_by_voucher(id):
     endpoint='group_attribute_list')
 @login_required
 def group_attribute_list():
+    attributes_mapping = {'Mikrotik-Rate-Limit': 'Rate Limit (rx/tx)',
+                        'Session-Timeout'    : 'Session Time (seconds)',
+                        'Port-Limit'         : 'Max Session per-user',
+                        'Mikrotik-Xmit-Limit': 'Download Quota (bytes)',
+                        'Mikrotik-Recv-Limit': 'Upload Quota (bytes)'}
+
     attributes = (vouchers_models.RadGroupReply.query.
             filter_by(groupname=app.config['RADIUS_GROUP']).all())
     return render_template('list.html', title='Group Attribute',
