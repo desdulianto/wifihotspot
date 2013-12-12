@@ -229,9 +229,11 @@ def ip_bindings_list():
     return render_template('list.html', title='IP Bindings',
             items=bindings,
             columns=[
-                dict(title='MAC Address', field=lambda x: x['mac-address']),
-                dict(title='Type', field=lambda x: x['type']),
-                dict(title='Comment', field=lambda x: x['comment']),
+                dict(title='Address', field=lambda x: x.get('mac-address',
+                    False) or x.get('address')),
+                dict(title='Type', field=lambda x: x.get('type', 'regular')),
+                dict(title='Server', field=lambda x: x.get('server', 'all')),
+                dict(title='Comment', field=lambda x: x.get('comment', '')),
                 dict(title='Enabled', field=lambda x: x['disabled'] == 'false')
                 ],
             )
