@@ -48,7 +48,9 @@
             <div class="col-md-2">
                 <ul class="nav nav-pills nav-stacked">
                     {% for menu in g.menus %}
-                    <li {% if request.path==menu.url %}class="active"{%endif%}>
+                    {% set path = request.path.split('/')[1] %}
+                    {% set url = menu.url.split('/')[1] %}
+                    <li {% if path==url %}class="active"{%endif%}>
                     <a href="{{menu.url}}"><h4>{{menu.title}}</h4></a>
                     </li>
                     {% endfor %}
