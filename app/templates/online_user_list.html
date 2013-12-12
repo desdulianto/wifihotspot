@@ -9,14 +9,22 @@
 </div>
 {% endmacro %}
 
+{% block panelheading %}
+{{super()}} <span class="label label-primary pull-right">{{items|count}} user(s) online</span>
+{% endblock %}
+
 {% block panelbody %}
 <form class="form-inline" role="form" action="" method="get">
-    {{ formgroup("username", "User Name") }}
-    {{ formgroup("phone", "Phone Number") }}
-    {{ formgroup("user", "Voucher") }}
-    {{ formgroup("address", "IP Address") }}
-    {{ formgroup("server", "Hotspot") }}
-    <button type="submit" class="btn btn-default btn-sm">Refresh</button>
+    <div class="row">
+        {{ formgroup("username", "User Name") }}
+        {{ formgroup("phone", "Phone Number") }}
+        {{ formgroup("user", "Voucher") }}
+        {{ formgroup("address", "IP Address") }}
+        {{ formgroup("server", "Hotspot") }}
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-default btn-sm">Refresh</button>
+        </div>
+    </div>
 </form>
 {{super()}}
 {% endblock %}

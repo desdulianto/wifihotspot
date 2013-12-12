@@ -2,7 +2,8 @@
 
 {% block content %}
 <div class="panel panel-default">
-    {% if title is defined %}<div class="panel-heading">{{title}}</div>{%endif%}
+    {% if title is defined %}<div class="panel-heading">{% block panelheading
+        %}{{title}}{% endblock %}</div>{%endif%}
     <div class="panel-body">
     {% block panelbody %}
     {% if search is defined %}
