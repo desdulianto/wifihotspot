@@ -4,6 +4,7 @@ from flask.ext.login import login_required
 
 from werkzeug.exceptions import NotFound
 from rosapi import RosAPIError
+from sqlalchemy import or_
 
 from app import app
 from app import db
@@ -41,11 +42,37 @@ def index():
 @blueprint.route('/list', endpoint='list')
 @login_required
 def list_view():
+    kwargs = dict()
+    username = None
+    phone = None
+    for key, value in request.args.iteritems():
+        if value == '':
+            continue
+        elif key == 'username':
+            username = value.lower()
+        elif key == 'phone':
+            phone = value.lower()
+        else:
+            kwargs[key] = value
 
-    active_users = app.mikrotik.get_resource(resource).get()
+    query = vouchers_models.Contact.query
+    if username is not None:
+        query = query.filter_by(name=username)
+    if phone is not None:
+        query = query.filter_by(phone=phone)
+
+    active_users = []
+    if username is not None or phone is not None:
+        for contact in query.all():
+            for voucher in contact.vouchers:
+                active_users.extend(
+                        app.mikrotik.get_resource(resource).get(user=voucher.username))
+    else:
+        active_users.extend(
+                app.mikrotik.get_resource(resource).get(**kwargs))
     for user in active_users:
         user['contact-name'], user['contact-phone'] = getContact(user)
-    return render_template('list.html', title='Hotspot User',
+    return render_template('online_user_list.html', title='Hotspot User',
             items=active_users,
             columns=[
                 dict(title='Name', field=lambda x: x['contact-name']),
