@@ -14,6 +14,8 @@ from flask.ext.login import login_required
 
 from flask.ext.paginate import Pagination
 
+from werkzeug.exceptions import InternalServerError
+
 from jinja2 import Markup
 from sqlalchemy import and_, or_
 from sqlalchemy.sql import func
@@ -108,8 +110,13 @@ def voucher_service_new(name, phone):
     addToRadius(voucher, name, phone, app.config['RADIUS_GROUP'])
 
     # send to sms queue
-    sms_text = render_template('voucher_message.txt', name=name, phone=phone,
-            voucher=voucher)
+    try:
+        voucher_message = open(app.config['VOUCHER_TEMPLATE_FILE'], 'r')
+        sms_text = render_template_string(voucher_message, name=name,
+                phone=phone, voucher=voucher)
+    except IOError:
+        raise InternalServerError(
+            description='Cannot read voucher template file')
     #sendSMS(phone, text=sms_text)
     return jsonify(status='OK', phone=phone, voucher=voucher)
 
@@ -198,11 +205,10 @@ def voucher_delete(id):
 def edit_message_template():
     form = forms.VoucherMessageForm()
     if request.method == 'GET':
-        with app.open_resource('templates/voucher_message.txt') as f:
+        with open(app.config['VOUCHER_TEMPLATE_FILE'], 'r') as f:
             form.message.data = f.read()
     if form.validate_on_submit():
-        with open(os.path.join(app.root_path, 'templates/voucher_message.txt'),
-            'w') as f:
+        with open(app.config['VOUCHER_TEMPLATE_FILE'], 'w') as f:
             f.write(form.message.data)
         return redirect(url_for('.index'))
     return render_template('form_voucher_message.html', title='Format Pesan Voucher',
