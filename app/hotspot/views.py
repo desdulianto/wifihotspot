@@ -247,6 +247,9 @@ def ip_bindings_list():
 @login_required
 def ip_bindings_new():
     form = forms.IpBindingForm()
+    servers = app.mikrotik.get_resource('/ip/hotspot').get()
+    form.server.choices = [('all', 'all')]
+    form.server.choices.extend([(x['name'], x['name']) for x in servers])
     if form.validate_on_submit():
         kwargs = dict()
         if form.address_type.data == 'ip':
@@ -280,6 +283,9 @@ def ip_binding_delete(id):
 def ip_bindings_edit(id):
     res = app.mikrotik.get_resource('/ip/hotspot/ip-binding')
     form = forms.IpBindingForm(request.form)
+    servers = app.mikrotik.get_resource('/ip/hotspot').get()
+    form.server.choices = [('all', 'all')]
+    form.server.choices.extend([(x['name'], x['name']) for x in servers])
     if request.method == 'GET':
         binding = res.get(id=id)
         if len(binding) == 0:

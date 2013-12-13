@@ -1,5 +1,6 @@
 from flask.ext.wtf import Form
-from wtforms import TextField, IntegerField, RadioField, BooleanField
+from wtforms import TextField, IntegerField, RadioField, BooleanField, \
+    SelectField
 from wtforms.validators import ValidationError, IPAddress, DataRequired
 
 
@@ -77,7 +78,7 @@ class IpBindingForm(Form):
     address_type = RadioField('Address Type', choices=[('mac', 'MAC Address'),
                                                         ('ip' , 'IP Address')],
                                                         default='mac')
-    server  = TextField('Server')
+    server  = SelectField('Server')
     type    = RadioField('Action', choices=[('bypassed', 'Bypass'),
                                           ('blocked', 'Block')],
                                           default='bypassed')
