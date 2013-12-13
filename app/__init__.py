@@ -45,6 +45,8 @@ config.read(config_file)
 app.config['SECRET_KEY'] = config.get('flask', 'SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = config.get('flask',
     'SQLALCHEMY_DATABASE_URI')
+app.config['LOGFILE'] = config.get('flask', 'LOGFILE')
+app.config['LOGLEVEL'] = config.get('flask', 'LOGLEVEL')
 
 # mikrotik
 app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')
@@ -137,9 +139,10 @@ if not app.debug:
     import logging
     from logging import Formatter
     from logging.handlers import SMTPHandler, RotatingFileHandler
-    file_handler = RotatingFileHandler(filename='access.log',
+    file_handler = RotatingFileHandler(filename=app.config['LOGFILE'],
         maxBytes=1073741824, backupCount=10)
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(getattr(logging, app.config['LOGLEVEL'].upper(),
+        logging.WARNING))
     file_handler.setFormatter(Formatter(
         '%(asctime)s %(levelname)s: %(message)s '
             '[in %(pathname)s:%(lineno)d]'
