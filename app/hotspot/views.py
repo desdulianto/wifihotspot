@@ -203,7 +203,7 @@ def edit_group_attribute():
                 db.session.add(attr)
 
         update_attribute('Mikrotik-Rate-Limit',
-                lambda x: x == 0, form.mikrotikRateLimit.data, attributes)
+                lambda x: x == '', form.mikrotikRateLimit.data, attributes)
         update_attribute('Session-Timeout', lambda x: x == 0,
                 form.sessionTimeout.data, attributes)
         update_attribute('Port-Limit', lambda x: x == 1,
