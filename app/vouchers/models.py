@@ -28,8 +28,8 @@ class RadCheck(db.Model):
 class RadUserGroup(db.Model):
     __tablename__ = 'radusergroup'
     __bind_key__  = 'radius'
-    username = db.Column(db.String(64), db.ForeignKey('radcheck.username'), nullable=False, 
-            default='', index=True, primary_key=True, )
+    username = db.Column(db.String(64), db.ForeignKey('radcheck.username'), 
+            nullable=False, default='', index=True, primary_key=True, )
     groupname = db.Column(db.String(64), nullable=False, default='', index=True)
     priority = db.Column(db.Integer, nullable=False, default=0)
 
@@ -50,7 +50,6 @@ class Contact(db.Model):
     __tablename__ = 'contact'
     __bind_key__ = 'radius'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    name = db.Column(db.String(64), nullable=False, default='',
-            primary_key=True)
-    phone = db.Column(db.String(20), primary_key=True)
+    name = db.Column(db.String(64), nullable=False, default='', index=True)
+    phone = db.Column(db.String(20), index=True)
     vouchers = db.relationship('RadCheck', backref='contact')
