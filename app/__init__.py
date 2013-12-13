@@ -8,6 +8,8 @@ from werkzeug.exceptions import InternalServerError
 import sqlalchemy.exc
 import rosapi
 
+import sys
+
 
 app = Flask(__name__)
 
@@ -16,7 +18,11 @@ import templates
 
 # check config.py if no config.py then call setup views
 try:
-    open('config.ini', 'r')
+    try:
+        config_file = sys.argv[1]
+    except IndexError:
+        config_file = 'config.ini'
+    open(config_file, 'r')
     app.config['SETUP'] = False
 except IOError:
     # generate temporary secret key
@@ -33,7 +39,7 @@ except IOError:
 import ConfigParser
 
 config = ConfigParser.ConfigParser()
-config.read('config.ini')
+config.read(config_file)
 
 # flask
 app.config['SECRET_KEY'] = config.get('flask', 'SECRET_KEY')
