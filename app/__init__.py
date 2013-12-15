@@ -17,10 +17,7 @@ app = Flask(__name__)
 
 # check config.py if no config.py then call setup views
 try:
-    try:
-        config_file = sys.argv[1]
-    except IndexError:
-        config_file = 'config.ini'
+    config_file = 'config.ini'
     open(config_file, 'r')
     app.config['SETUP'] = False
 except IOError:
