@@ -8,7 +8,7 @@
 """
 
 from flask import render_template, jsonify, flash, redirect, url_for, \
-        request, current_app
+        request, current_app, render_template_string
 from flask import Blueprint
 from flask.ext.login import login_required
 
@@ -111,7 +111,7 @@ def voucher_service_new(name, phone):
 
     # send to sms queue
     try:
-        voucher_message = open(app.config['VOUCHER_TEMPLATE_FILE'], 'r')
+        voucher_message = open(app.config['VOUCHER_TEMPLATE_FILE'], 'r').read()
         sms_text = render_template_string(voucher_message, name=name,
                 phone=phone, voucher=voucher)
     except IOError:
