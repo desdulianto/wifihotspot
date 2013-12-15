@@ -10,11 +10,10 @@ import rosapi
 
 import sys
 
+import templates
+
 
 app = Flask(__name__)
-
-# load templates custom filters and test
-import templates
 
 # check config.py if no config.py then call setup views
 try:
@@ -150,6 +149,9 @@ if not app.debug:
             '[in %(pathname)s:%(lineno)d]'
             ))
     app.logger.addHandler(file_handler)
+
+# load templates custom filters and test
+app.jinja_env.tests['isdict'] = templates.isdict
 
 # views
 import views
