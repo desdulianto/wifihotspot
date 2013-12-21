@@ -1,10 +1,16 @@
-from flask import render_template, redirect, url_for, request
+from flask import render_template, redirect, url_for, request, flash
 from flask import Blueprint
 from flask.ext.login import login_required
 
+from jinja2 import Markup
 from werkzeug.exceptions import NotFound
 from rosapi import RosAPIError
 from sqlalchemy import or_
+import ftplib
+import StringIO
+import BeautifulSoup
+import base64
+import magic
 
 from app import app
 from app import db
@@ -35,7 +41,9 @@ def index():
     menus = [dict(title='Daftar User Online', url=url_for('.list')),
              dict(title='Hotspot Parameter',
              url=url_for('.group_attribute_list')),
-             dict(title='Hotspot Bypass/Block', url=url_for('.ip_bindings_list'))]
+             dict(title='Hotspot Bypass/Block',
+                 url=url_for('.ip_bindings_list')),
+             dict(title='Hotspot Banner', url=url_for('.banner_list'))]
     return render_template('module_index.html', menus=menus)
 
 
@@ -323,3 +331,89 @@ def ip_bindings_edit(id):
     return render_template('form_complex.html', title='Edit Host Bypass/Block',
             fields=[('Host Address', ['address_type', 'address']), 'server',
                 'type', 'comment', 'enabled'], form=form)
+
+
+def mikrotikFTP():
+    ftp = ftplib.FTP(host=app.config['MIKROTIK_HOST'],
+            user=app.config['MIKROTIK_FTP_USER'],
+            passwd=app.config['MIKROTIK_FTP_PASSWORD'])
+    return ftp
+
+def mikrotikHotspotPage(ftp):
+    ftp.cwd('/' + app.config['MIKROTIK_HOTSPOT_DIR'])
+    login = StringIO.StringIO()
+    ftp.retrlines('RETR login.html', lambda x: login.write(x))
+    return login
+
+
+@blueprint.route('/banner', methods=['GET'], endpoint='banner_list')
+@login_required
+def banner_list():
+    ftp = mikrotikFTP() 
+    login = mikrotikHotspotPage(ftp)
+    soup = BeautifulSoup.BeautifulSoup(login.getvalue())
+    banners = soup('img', attrs={'data-hotspot':True})
+    for banner in banners:
+        banner['id'] = banner['data-hotspot']
+        img = StringIO.StringIO()
+        ftp.cwd('/' + app.config['MIKROTIK_HOTSPOT_DIR'])
+        try:
+            ftp.retrbinary('RETR ' + banner['src'], lambda x: img.write(x))
+        except ftplib.error_perm:
+            banner['img'] = url_for('static', filename='no_image.png')
+        else:
+            img = img.getvalue()
+            with magic.Magic(flags=magic.MAGIC_MIME_TYPE) as m:
+                banner['img'] = ('data:' + m.id_buffer(img) + ';base64,' +
+                    base64.b64encode(img))
+    return render_template('list.html', title='Banner List', items=banners,
+            columns=[dict(title='ID', field=lambda x: x['id']),
+                     dict(title='Image', field=lambda x: Markup('<img src="' +
+                         x['img'] + '" width="240">'))],
+                     edit_url='.edit_banner', void_url='.delete_banner'
+                     )
+
+
+@blueprint.route('/banner/<id>', methods=['GET', 'POST'],
+        endpoint='edit_banner')
+@login_required
+def edit_banner(id):
+    ftp = mikrotikFTP()
+    login = mikrotikHotspotPage(ftp)
+    soup = BeautifulSoup.BeautifulSoup(login.getvalue())
+    banner = soup('img', attrs={'data-hotspot':id})
+
+    if len(banner) == 0:
+        raise NotFound()
+
+    banner = banner[0]
+
+    form = forms.BannerForm()
+    if form.validate_on_submit():
+        image = request.files[form.image.name]
+        ftp.cwd('/' + app.config['MIKROTIK_HOTSPOT_DIR'])
+        ftp.storbinary('STOR ' + banner['src'], image.stream)
+        return redirect(url_for('.banner_list'))
+    return render_template('form_complex.html', form=form, title=id+' Image',
+            fields=[('image', dict(accept='image/*'))])
+
+
+@blueprint.route('/banner/delete/<id>', methods=['GET'], endpoint='delete_banner')
+@login_required
+def delete_banner(id):
+    ftp = mikrotikFTP()
+    login = mikrotikHotspotPage(ftp)
+    soup = BeautifulSoup.BeautifulSoup(login.getvalue())
+    banner = soup('img', attrs={'data-hotspot':id})
+
+    if len(banner) == 0:
+        raise NotFound()
+
+    banner = banner[0]
+
+    ftp.cwd('/' + app.config['MIKROTIK_HOTSPOT_DIR'])
+    try:
+        ftp.delete(banner['src'])
+    except ftplib.error_perm:
+        flash('File already deleted', 'warning')
+    return redirect(url_for('.banner_list'))
