@@ -117,7 +117,7 @@ def voucher_service_new(name, phone):
     except IOError:
         raise InternalServerError(
             description='Cannot read voucher template file')
-    #sendSMS(phone, text=sms_text)
+    sendSMS(phone, text=sms_text)
     return jsonify(status='OK', phone=phone, voucher=voucher)
 
 
