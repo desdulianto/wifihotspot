@@ -15,6 +15,5 @@ flask-paginate==0.1.5
 gunicorn==18.0
 itsdangerous==0.23
 psycopg2==2.5.1
-redis==2.8.0
 rosapi==0.1.17
 wsgiref==0.1.2
