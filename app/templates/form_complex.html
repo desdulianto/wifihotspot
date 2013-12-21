@@ -11,7 +11,8 @@
 {% endmacro %}
 
 {% block form_body %}
-<form action="" method="post" class="form-horizontal" role="form">
+<form action="" method="post" class="form-horizontal"
+    enctype="multipart/form-data" role="form">
     {{ form.hidden_tag() }}
 
     {% for field in fields %}
