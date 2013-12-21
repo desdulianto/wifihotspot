@@ -59,10 +59,10 @@
             {%- endfor %}
             <td><div class="btn-group btn-group-xs">
                     {% if edit_url is defined and edit_url is not none %}<a href="{{url_for(edit_url,
-                    id=item.id)}}" class="btn btn-default"><span
+                    id=item['id'])}}" class="btn btn-default"><span
                         class="glyphicon glyphicon-pencil"></span></a>{% endif %}
                 {% if void_url is defined and void_url is not none %}<a
-                    href="{{url_for(void_url, id=item.id)}}" class="btn
+                    href="{{url_for(void_url, id=item['id'])}}" class="btn
                     btn-default item-void"><span class="glyphicon
                         glyphicon-trash"></span></a>{% endif %}
                 </div>

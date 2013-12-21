@@ -1,6 +1,6 @@
 from flask.ext.wtf import Form
 from wtforms import TextField, IntegerField, RadioField, BooleanField, \
-    SelectField
+    SelectField, FileField
 from wtforms.validators import ValidationError, IPAddress, DataRequired
 
 
@@ -92,3 +92,13 @@ class IpBindingForm(Form):
             IPAddress('Invalid IP address')(form, field)
         else:
             MACAddress('Invalid MAC address')(form, field)
+
+
+class BannerForm(Form):
+    image = FileField('Image File')
+
+    def validate_image(form, field):
+        mimetype = field.data.mimetype
+
+        if 'image/' not in mimetype:
+            raise ValidationError('Must be image file')

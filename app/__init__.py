@@ -51,6 +51,10 @@ app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')
 app.config['MIKROTIK_PORT'] = config.getint('mikrotik', 'port')
 app.config['MIKROTIK_USER'] = config.get('mikrotik', 'user')
 app.config['MIKROTIK_PASSWORD'] = config.get('mikrotik', 'password')
+app.config['MIKROTIK_FTP_USER'] = config.get('mikrotik', 'ftp_user')
+app.config['MIKROTIK_FTP_PASSWORD'] = config.get('mikrotik', 'ftp_password')
+app.config['MIKROTIK_FTP_PORT'] = config.getint('mikrotik', 'ftp_port')
+app.config['MIKROTIK_HOTSPOT_DIR'] = config.get('mikrotik', 'hotspot_dir')
 
 # radius
 app.config['RADIUS_DBTYPE'] = config.get('radius', 'dbtype')
