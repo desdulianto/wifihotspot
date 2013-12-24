@@ -45,6 +45,7 @@ app.config['LOGFILE'] = config.get('flask', 'LOGFILE')
 app.config['LOGLEVEL'] = config.get('flask', 'LOGLEVEL')
 app.config['VOUCHER_TEMPLATE_FILE'] = config.get('flask',
     'VOUCHER_TEMPLATE_FILE')
+app.config['VOUCHER_SYMBOLS'] = config.get('flask', 'VOUCHER_SYMBOLS')
 
 # mikrotik
 app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')

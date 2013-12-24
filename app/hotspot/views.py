@@ -268,6 +268,8 @@ def ip_bindings_new():
         if form.server.data.strip() != '':
             kwargs['server'] = form.server.data.strip()
 
+	kwargs['comment'] = form.comment.data.strip()
+
         res = app.mikrotik.get_resource('/ip/hotspot/ip-binding')
         res.add(**kwargs)
         return redirect(url_for('.ip_bindings_list'))
