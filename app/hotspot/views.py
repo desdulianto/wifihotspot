@@ -149,6 +149,7 @@ def disconnect_by_voucher(id):
 def group_attribute_list():
     attributes_mapping = {'Mikrotik-Rate-Limit': 'Rate Limit (rx/tx)',
                         'Session-Timeout'    : 'Session Time (seconds)',
+                        'Idle-Timeout'       : 'Idle Timeout (seconds)',
                         'Port-Limit'         : 'Max Session per-user',
                         'Mikrotik-Xmit-Limit': 'Download Quota (bytes)',
                         'Mikrotik-Recv-Limit': 'Upload Quota (bytes)'}
@@ -191,6 +192,8 @@ def edit_group_attribute():
             , attributes), 'value', 0)
         form.mikrotikXmitLimit.data = getattr(getAttribute('Mikrotik-Xmit-Limit'
             , attributes), 'value', 0)
+        form.idleTimeout.data = getattr(getAttribute('Idle-Timeout',
+            attributes), 'value', 0)
     if form.validate_on_submit():
         attributes = (vouchers_models.RadGroupReply.query.
                 filter_by(groupname=app.config['RADIUS_GROUP']).all())
@@ -205,7 +208,7 @@ def edit_group_attribute():
                     attr = vouchers_models.RadGroupReply(
                             groupname=app.config['RADIUS_GROUP'],
                             attribute=attrname.strip(),
-                            op = ':=', value=data.strip())
+                            op = ':=', value=str(data).strip())
                 else:
                     attr.value = data
                 db.session.add(attr)
@@ -220,14 +223,17 @@ def edit_group_attribute():
                 form.mikrotikRecvLimit.data, attributes)
         update_attribute('Mikrotik-Xmit-Limit', lambda x: x == 0,
                 form.mikrotikXmitLimit.data, attributes)
+        update_attribute('Idle-Timeout', lambda x: x == 0,
+                form.idleTimeout.data, attributes)
 
         db.session.commit()
 
         return redirect(url_for('.group_attribute_list'))
 
     return render_template('form_complex.html', title='Group Attribute',
-            fields=['mikrotikRateLimit', 'sessionTimeout', 'portLimit', 
-                'mikrotikRecvLimit', 'mikrotikXmitLimit'], form=form)
+            fields=['mikrotikRateLimit', 'sessionTimeout', 'idleTimeout', 
+                'portLimit',  'mikrotikRecvLimit', 'mikrotikXmitLimit'], 
+            form=form)
 
 
 @blueprint.route('/ip-bindings', methods=['GET'], endpoint='ip_bindings_list')

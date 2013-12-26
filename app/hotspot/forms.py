@@ -21,6 +21,7 @@ class GroupAttributeForm(Form):
     mikrotikRecvLimit = IntegerField('Upload Quota (bytes)', default=0)
     mikrotikXmitLimit = IntegerField('Download Quota (bytes)', default=0)
     sessionTimeout    = IntegerField('Session Time (seconds)', default=0)
+    idleTimeout       = IntegerField('Idle Timeout (seconds)', default=0)
     portLimit         = IntegerField('Sessions per-user', default=1)
 
     def validate_mikrotikRateLimit(form, field):
