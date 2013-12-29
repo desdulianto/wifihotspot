@@ -26,6 +26,7 @@ import json
 from subprocess import check_call
 import os
 from functools import wraps
+from datetime import datetime, timedelta
 
 from app import app, db
 import models
@@ -76,11 +77,23 @@ def addContact(name, phone):
 def addToRadius(voucher, name, phone, groupname):
     radcheck = models.RadCheck(username=voucher, attribute='Cleartext-Password',
             op=':=', value=voucher)
+    try:
+        session_timeout = int((models.RadGroupReply.query.filter_by(
+            groupname=app.config['RADIUS_GROUP']).filter_by(
+                attribute='Session-Timeout').first()).value)
+    except:
+        session_timeout = 86400 # default session timeout 24 hours
+    expiration = ((datetime.now() + timedelta(seconds=session_timeout)).
+            strftime('%d %b %Y %H:%M'))
+    expired = models.RadCheck(username=voucher, attribute='Expiration',
+            op=':=', value=expiration)
     radgroup = models.RadUserGroup(username=voucher, groupname=groupname,
             priority=1)
     contact = addContact(name=name, phone=phone)
     radcheck.contact = contact
+    expired.contact = contact
     db.session.add(radcheck)
+    db.session.add(expired)
     db.session.add(radgroup)
     db.session.add(contact)
     db.session.commit()
@@ -132,7 +145,8 @@ def voucher_list():
 
     q = request.args.get('q', None)
 
-    vouchers = (models.RadCheck.query.outerjoin(models.Contact).
+    vouchers = (models.RadCheck.query.filter_by(
+        attribute='Cleartext-Password').outerjoin(models.Contact).
             order_by(models.Contact.name).
             order_by(models.Contact.phone))
 
@@ -191,7 +205,9 @@ def voucher_delete(id):
             app.mikrotik.get_resource('/ip/hotspot/active').remove(id=user['id'])
         except:
             pass
-    db.session.delete(voucher)
+    records = models.RadCheck.query.filter_by(username=voucher.username).all()
+    for record in records:
+        db.session.delete(record)
     db.session.commit()
     flash(Markup(
         '<h1>Voucher {voucher} telah dihapus!</h1>'.
