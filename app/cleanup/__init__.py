@@ -8,7 +8,7 @@ from app import app, db
 
 def cleanup():
     session_time = (models.RadGroupReply.query.
-            filter_by(attribute='Session-Time').first())
+            filter_by(attribute='Session-Timeout').first())
     if session_time is None:
         session_time = 86400
     else:
