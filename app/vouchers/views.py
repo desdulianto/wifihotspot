@@ -156,6 +156,13 @@ def voucher_list():
             models.Contact.name.like('%' + q + '%'),
             models.Contact.phone.like('%' + q + '%') ))
 
+    def getExpiration(voucher):
+        expiration = (models.RadCheck.query.filter_by(
+            username=voucher.username).filter_by(attribute='Expiration').first())
+        if expiration is not None:
+            expiration = expiration.value
+        return expiration
+
     pagination = Pagination(page=page, total=vouchers.count(), search=False,
             record_name='vouchers', per_page=per_page, bs_version=3)
     return render_template('list.html',
@@ -165,7 +172,11 @@ def voucher_list():
                      dict(title='Telepon', field=lambda x: x.contact.phone if
                          x.contact is not None else '-'),
                      dict(title='No. Voucher', field='username'),
-                     dict(title='Waktu Generate', field='time')],
+                     dict(title='Waktu Generate', field=lambda x:
+                         '-' if x.time is None else x.time.strftime(
+                             '%d %b %Y %H:%M')),
+                     dict(title='Waktu Expired', field=lambda x:
+                         getExpiration(x))],
             title='Daftar Voucher',
             void_url='.voucher_delete', 
             create_url='.voucher_new',
