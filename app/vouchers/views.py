@@ -9,6 +9,7 @@
 
 from flask import render_template, jsonify, flash, redirect, url_for, \
         request, current_app, render_template_string
+from flask import make_response
 from flask import Blueprint
 from flask.ext.login import login_required
 
@@ -27,6 +28,8 @@ from subprocess import check_call
 import os
 from functools import wraps
 from datetime import datetime, timedelta
+import xlwt
+from StringIO import StringIO
 
 from app import app, db
 import models
@@ -107,7 +110,8 @@ def sendSMS(phone, text):
 @blueprint.route('/', endpoint='index')
 @login_required
 def index():
-    menus = [dict(title='Daftar Voucher', url=url_for('.voucher_list')),
+    menus = [dict(title='Daftar Contact', url=url_for('.contact_list')),
+             dict(title='Daftar Voucher', url=url_for('.voucher_list')),
              dict(title='Template Pesan',
              url=url_for('.edit_message_template'))]
     return render_template('module_index.html', menus=menus)
@@ -240,3 +244,88 @@ def edit_message_template():
         return redirect(url_for('.index'))
     return render_template('form_voucher_message.html', title='Format Pesan Voucher',
             fields=[('message', {'rows': 5})], form=form)
+
+
+@blueprint.route('/contacts', methods=['GET'], endpoint='contact_list',
+        defaults={'output': 'html'})
+@blueprint.route('/contacts/<string:output>', methods=['GET'], endpoint='contact_list')
+@login_required
+def contact_list(output='html'):
+    per_page=20
+    try:
+        page = int(request.args.get('page', 1))
+    except ValueError:
+        page = 1
+
+    q = request.args.get('q', None)
+
+    items = (models.Contact.query.order_by(models.Contact.name).
+            order_by(models.Contact.phone))
+
+    if q is not None:
+        items = items.filter(or_(
+            models.Contact.name.like('%' + q + '%'),
+            models.Contact.phone.like('%' + q + '%')))
+
+    if output == 'excel':
+        return render_excel(items=items.all(), title='Daftar Contact',
+                columns=[dict(title='Nama', field='name', width=6000),
+                         dict(title='No. Telepon', field='phone', width=4000)])
+
+    pagination = Pagination(page=page, total=items.count(), search=False,
+            record_name='contacts', per_page=per_page, bs_version=3)
+
+    return render_template('list.html', items=items.all(), title='Daftar Contact',
+            columns=[dict(title='Nama', field='name'),
+                     dict(title='No. Telepon', field='phone')],
+            pagination=pagination, search=True,
+            buttons=[dict(title='Export to Excel', url='.contact_list',
+                url_params={'output': 'excel'})])
+
+
+def render_excel(items, title='', columns=None):
+    book = xlwt.Workbook()
+    sheet = book.add_sheet(title)
+
+    if columns is None:
+        columns = []
+
+    style = xlwt.easyxf('font: bold on, height 280;')
+    sheet.row(0).height = 400
+    align = xlwt.Alignment()
+    align.horz = xlwt.Alignment.HORZ_CENTER
+    style.alignment = align
+    sheet.write_merge(0, 0, 0, len(columns), title, style)
+
+    sheet.row(2).height = 300
+    for i in xrange(len(columns)):
+        style = xlwt.easyxf('font: bold on;')
+        sheet.write(2, 1+i, columns[i]['title'], style) 
+        if columns[i].get('width', False) is not False:
+            sheet.col(1+i).width = columns[i]['width']
+    sheet.col(0).width = 1500
+
+    for i in xrange(len(items)):
+        style = xlwt.easyxf()
+        pattern = xlwt.Pattern()
+        if (i+1) % 2 == 0:
+            pattern.pattern = 0x12
+            pattern.pattern_back_colour = 22
+        else:
+            pattern.pattern = 0x00
+        style.pattern = pattern
+        sheet.write(3+i, 0, i+1, style)
+        for j in xrange(len(columns)):
+            value = getattr(items[i], columns[j]['field'])
+            sheet.write(3+i, 1+j, value, style)
+
+    output = StringIO()
+    book.save(output)
+
+    response = make_response(output.getvalue())
+    response.headers['Content-Type'] = 'application/ms-excel'
+    response.headers['Content-Disposition'] = \
+            'attachment; filename=contact.xls'
+    output.close()
+
+    return response

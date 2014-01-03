@@ -19,3 +19,4 @@ itsdangerous==0.23
 psycopg2==2.5.1
 rosapi==0.1.17
 wsgiref==0.1.2
+xlwt==0.7.5
