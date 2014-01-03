@@ -267,15 +267,16 @@ def contact_list(output='html'):
             models.Contact.name.like('%' + q + '%'),
             models.Contact.phone.like('%' + q + '%')))
 
+
+    if output == 'excel':
+        return render_excel(items=items.all(), title='Daftar Contact',
+                columns=[dict(title='Nama', field='name', width=6000),
+                         dict(title='No. Telepon', field='phone', width=4000)])
+
     pagination = Pagination(page=page, total=items.count(), search=False,
             record_name='contacts', per_page=per_page, bs_version=3)
 
     items = items.limit(per_page).offset((page-1)*per_page).all()
-
-    if output == 'excel':
-        return render_excel(items=items, title='Daftar Contact',
-                columns=[dict(title='Nama', field='name', width=6000),
-                         dict(title='No. Telepon', field='phone', width=4000)])
 
     return render_template('list.html', items=items, title='Daftar Contact',
             columns=[dict(title='Nama', field='name'),
