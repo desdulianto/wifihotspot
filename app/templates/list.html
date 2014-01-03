@@ -22,11 +22,18 @@
     </form>
     {% endif %}
     {% if create_url is defined %}
-    <form action="{{url_for(create_url)}}" method="get" role="form" class="pull-right">
-        <button type="submit" class="btn btn-primary">
-            Create New
-        </button>
-    </form>
+    <a class="btn btn-primary pull-right" href="{{url_for(create_url)}}">Create New</a>
+    {% endif %}
+    {% if buttons is defined %}
+    {% for button in buttons %}
+    {% if button.url_params is defined %}
+    {% set url_params = button.url_params %}
+    {% else %}
+    {% set url_params = dict() %}
+    {% endif %}
+    <a class="btn btn-primary pull-right"
+        href="{{url_for(button.url, **url_params)}}">{{button.title}}</a>
+    {% endfor %}
     {% endif %}
     {% endblock %}
     </div>
