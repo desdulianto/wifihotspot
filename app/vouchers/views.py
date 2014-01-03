@@ -280,7 +280,7 @@ def contact_list(output='html'):
                      dict(title='No. Telepon', field='phone')],
             pagination=pagination, search=True,
             buttons=[dict(title='Export to Excel', url='.contact_list',
-                url_params={'output': 'excel'})])
+                url_params={'output': 'excel', 'q':q})])
 
 
 def render_excel(items, title='', columns=None):
