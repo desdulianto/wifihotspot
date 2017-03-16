@@ -31,7 +31,9 @@ from datetime import datetime, timedelta
 import xlwt
 from StringIO import StringIO
 
-from app import app, db
+import smtplib
+
+from app import app, db, VOUCHER_MESSAGE
 import models
 import forms
 
@@ -121,6 +123,7 @@ def index():
         endpoint='voucher_service_new')
 @jsonp
 def voucher_service_new(name, phone):
+    global VOUCHER_MESSAGE
     voucher = generateVoucher()
 
     # save to radius db
@@ -128,14 +131,52 @@ def voucher_service_new(name, phone):
 
     # send to sms queue
     try:
-        voucher_message = open(app.config['VOUCHER_TEMPLATE_FILE'], 'r').read()
-        sms_text = render_template_string(voucher_message, name=name,
+        sms_text = render_template_string(VOUCHER_MESSAGE, name=name,
                 phone=phone, voucher=voucher)
     except IOError:
         raise InternalServerError(
             description='Cannot read voucher template file')
     sendSMS(phone, text=sms_text)
     return jsonify(status='OK', phone=phone, voucher=voucher)
+
+@blueprint.route('/@email/<name>/<email>', methods=['GET'],
+        endpoint='voucher_service_new_email')
+@jsonp
+def voucher_service_new_email(name, email):
+    global VOUCHER_MESSAGE
+    voucher = generateVoucher()
+    addToRadius(voucher, name, email, app.config['RADIUS_GROUP'])
+
+    try:
+        email_body = render_template_string(VOUCHER_MESSAGE, name=name,
+                phone=email, voucher=voucher)
+    except IOError:
+        raise InternalServerError(
+            description='Cannot read voucher template file')
+
+    fromaddr = app.config['EMAIL_FROM']
+    toaddr   = email
+    email_server = app.config['EMAIL_SERVER']
+    email_port   = app.config['EMAIL_PORT']
+    email_user = app.config['EMAIL_USER']
+    email_password = app.config['EMAIL_PASSWORD']
+    email = """\
+From: %s
+To: %s
+Subject: %s
+
+%s
+""" % (fromaddr, toaddr, 'Wi-fi Hotspot Voucher', email_body)
+    try:
+        server = smtplib.SMTP_SSL(email_server, email_port)
+        server.ehlo()
+        server.login(email_user,email_password)
+        server.sendmail(fromaddr, toaddr, email)
+        server.quit()
+    except Exception as e:
+        print(e)
+        return jsonify(status='ERROR')
+    return jsonify(status='OK', email=email, voucher=voucher)
 
 
 @blueprint.route('/list', methods=['GET'], endpoint='voucher_list')
@@ -173,7 +214,7 @@ def voucher_list():
             items=vouchers.limit(per_page).offset((page-1)*per_page).all(),
             columns=[dict(title='Nama', field=lambda x: x.contact.name if
                 x.contact is not None else '-'),
-                     dict(title='Telepon', field=lambda x: x.contact.phone if
+                     dict(title='Telepon/Email', field=lambda x: x.contact.phone if
                          x.contact is not None else '-'),
                      dict(title='No. Voucher', field='username'),
                      dict(title='Waktu Generate', field=lambda x:
@@ -234,13 +275,14 @@ def voucher_delete(id):
         endpoint='edit_message_template')
 @login_required
 def edit_message_template():
+    global VOUCHER_MESSAGE
     form = forms.VoucherMessageForm()
     if request.method == 'GET':
-        with open(app.config['VOUCHER_TEMPLATE_FILE'], 'r') as f:
-            form.message.data = f.read()
+        form.message.data = VOUCHER_MESSAGE
     if form.validate_on_submit():
         with open(app.config['VOUCHER_TEMPLATE_FILE'], 'w') as f:
             f.write(form.message.data)
+        VOUCHER_MESSAGE = open(app.config['VOUCHER_TEMPLATE_FILE'], 'r').read()
         return redirect(url_for('.index'))
     return render_template('form_voucher_message.html', title='Format Pesan Voucher',
             fields=[('message', {'rows': 5})], form=form)
@@ -271,7 +313,7 @@ def contact_list(output='html'):
     if output == 'excel':
         return render_excel(items=items.all(), title='Daftar Contact',
                 columns=[dict(title='Nama', field='name', width=6000),
-                         dict(title='No. Telepon', field='phone', width=4000)])
+                         dict(title='No. Telepon/email', field='phone', width=4000)])
 
     pagination = Pagination(page=page, total=items.count(), search=False,
             record_name='contacts', per_page=per_page, bs_version=3)
@@ -280,7 +322,7 @@ def contact_list(output='html'):
 
     return render_template('list.html', items=items, title='Daftar Contact',
             columns=[dict(title='Nama', field='name'),
-                     dict(title='No. Telepon', field='phone')],
+                     dict(title='No. Telepon/email', field='phone')],
             pagination=pagination, search=True,
             buttons=[dict(title='Export to Excel', url='.contact_list',
                 url_params={'output': 'excel', 'q':q})])

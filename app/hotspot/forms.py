@@ -68,7 +68,7 @@ class GroupAttributeForm(Form):
 
 class OnlineUserFilterForm(Form):
     username = TextField('User Name')
-    phone = TextField('Phone')
+    phone = TextField('Phone/Email')
     user = TextField('Voucher')
     address = TextField('IP Address')
     server = TextField('Hotspot')

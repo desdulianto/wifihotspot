@@ -14,7 +14,7 @@ from wtforms.validators import DataRequired, ValidationError
 
 class VoucherForm(Form):
     name = TextField('Nama', validators=[DataRequired()])
-    phone = TextField('No. Telepon', validators=[DataRequired()])
+    phone = TextField('No. Telepon/email', validators=[DataRequired()])
 
 
 class VoucherMessageForm(Form):

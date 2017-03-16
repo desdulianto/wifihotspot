@@ -86,7 +86,7 @@ def list_view():
             items=active_users,
             columns=[
                 dict(title='Name', field=lambda x: x['contact-name']),
-                dict(title='Phone', field=lambda x: x['contact-phone']),
+                dict(title='Phone/Email', field=lambda x: x['contact-phone']),
                 dict(title='Voucher', field=lambda x: x['user']),
                 dict(title='Address', field=lambda x: x['address']),
                 dict(title='Hotspot', field=lambda x: x['server']),

@@ -51,5 +51,5 @@ class Contact(db.Model):
     __bind_key__ = 'radius'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(64), nullable=False, default='', index=True)
-    phone = db.Column(db.String(20), index=True)
+    phone = db.Column(db.String(254), index=True)
     vouchers = db.relationship('RadCheck', backref='contact')

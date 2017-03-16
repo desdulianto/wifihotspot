@@ -46,6 +46,11 @@ app.config['LOGLEVEL'] = config.get('flask', 'LOGLEVEL')
 app.config['VOUCHER_TEMPLATE_FILE'] = config.get('flask',
     'VOUCHER_TEMPLATE_FILE')
 app.config['VOUCHER_SYMBOLS'] = config.get('flask', 'VOUCHER_SYMBOLS')
+app.config['EMAIL_FROM'] = config.get('flask', 'EMAIL_FROM') or ''
+app.config['EMAIL_SERVER'] = config.get('flask', 'EMAIL_SERVER') or ''
+app.config['EMAIL_PORT'] = config.get('flask', 'EMAIL_PORT') or ''
+app.config['EMAIL_USER'] = config.get('flask', 'EMAIL_USER') or ''
+app.config['EMAIL_PASSWORD'] = config.get('flask', 'EMAIL_PASSWORD') or ''
 
 # mikrotik
 app.config['MIKROTIK_HOST'] = config.get('mikrotik', 'host')
@@ -89,6 +94,9 @@ app.mikrotik = rosapi.RouterboardAPI(host=app.config['MIKROTIK_HOST'],
         port=app.config['MIKROTIK_PORT'])
 app.mikrotik.connect()
 app.mikrotik.login()
+
+# load voucher template file
+VOUCHER_MESSAGE = open(app.config['VOUCHER_TEMPLATE_FILE'], 'r').read()
 
 
 # handle exceptions
